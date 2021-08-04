@@ -1,0 +1,42 @@
+.loginDiv {
+    display: flex;
+    padding-bottom: 0px;
+    margin-bottom: 0px;
+}
+form {
+    align-content: center;
+    background-color: rgba(80, 74, 73, 0.336);
+    border-radius: 3px;
+    padding-bottom: 5px;
+}
+.loginForm {
+    border-radius: 20px;
+    margin-bottom: 0px;
+    padding-bottom: 5px;
+}
+.loginText {
+    font-size: 30px;
+}
+
+.loginButton {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: white;
+    background-color: #0a84ff;
+    border-radius: 3px;
+    border: solid 1px #0a84ff;
+}
+.errorP {
+    color: red;
+    font-size: 15px;
+    margin: 0px;
+    line-height: 20px;
+    padding-top: 10px;
+}
+input {
+    border-radius: 3px;
+    border: solid 1px #707070;
+    justify-content: right;
+    display: inline-block;
+}
