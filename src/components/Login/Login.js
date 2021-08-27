@@ -1,6 +1,5 @@
 import React from "react";
-import { Form, Button, Col, Row, Container, InputGroup } from "react-bootstrap";
-import { KeyFill, PersonCircle } from "react-bootstrap-icons";
+import logo from "../../logo.png";
 import { useHistory } from "react-router-dom";
 import "./Login.css";
 const axios = require("axios");
@@ -51,87 +50,90 @@ export default function Login(props) {
         event.preventDefault();
     };
 
+    const handleRegisterNeeded = (event) => {};
+
     return (
-        <div className="loginDiv">
-            <Container fluid>
-                <Row>
-                    <Col xs={12}>
-                        <Form className="loginForm" onSubmit={handleSubmit}>
+        <div className="loginDiv" style={{ marginTop: "5%" }}>
+            <div class="container-fluid" className="loginDiv">
+                <div class="col" className="mainCol">
+                    <img src={logo} className="App-logo" alt="logo" />
+                    <form className="loginForm" onSubmit={handleSubmit}>
+                        <div class="col-6 offset-3">
                             <h1 className="loginText">Login</h1>
-                            <Row>
-                                <Col xs={{ span: 10, offset: 1 }}>
-                                    <Form.Group controlId="formBasicEmail">
-                                        <InputGroup>
-                                            <InputGroup.Prepend>
-                                                <InputGroup.Text>
-                                                    <PersonCircle />
-                                                </InputGroup.Text>
-                                            </InputGroup.Prepend>
-                                            <Form.Control
-                                                value={usernameOrEmail}
-                                                name="usernameOrEmail"
-                                                type="text"
-                                                placeholder="Username or email"
-                                                onChange={(e) =>
-                                                    setusernameOrEmail(
-                                                        e.target.value
-                                                    )
-                                                }
-                                                required
-                                            />
-                                        </InputGroup>
-                                    </Form.Group>
-                                </Col>
-                            </Row>
-                            <Row>
-                                <Col xs={{ span: 10, offset: 1 }}>
-                                    <Form.Group controlId="formBasicPassword">
-                                        <InputGroup>
-                                            <InputGroup.Prepend>
-                                                <InputGroup.Text>
-                                                    <KeyFill />
-                                                </InputGroup.Text>
-                                            </InputGroup.Prepend>
-                                            <Form.Control
-                                                name="password"
-                                                value={password}
-                                                type="password"
-                                                placeholder="Password"
-                                                onChange={(e) =>
-                                                    setPassword(e.target.value)
-                                                }
-                                                required
-                                            />
-                                            {loginError === true && (
-                                                <p className="errorP">
-                                                    Your login credentials could
-                                                    not be verified.
-                                                </p>
-                                            )}
-                                        </InputGroup>
-                                    </Form.Group>
-                                </Col>
-                            </Row>
-                            <Row>
-                                <Col xs={{ span: 10, offset: 1 }}>
-                                    <Form.Group
-                                        style={{ alignItems: "center" }}
+                        </div>
+
+                        <div class="row">
+                            <div class="col-12">
+                                <input
+                                    style={{ margin: "2%" }}
+                                    autoComplete="no"
+                                    value={usernameOrEmail}
+                                    name="usernameOrEmail"
+                                    type="text"
+                                    placeholder="Username"
+                                    onChange={(e) =>
+                                        setusernameOrEmail(e.target.value)
+                                    }
+                                    required
+                                />
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col">
+                                <input
+                                    contrast
+                                    style={{ margin: "2%" }}
+                                    value={password}
+                                    name="password"
+                                    autoComplete="false"
+                                    type="password"
+                                    placeholder="Password"
+                                    onChange={(e) =>
+                                        setPassword(e.target.value)
+                                    }
+                                    required
+                                />
+                                {loginError === true && (
+                                    <p className="errorP">
+                                        Your login credentials could not be
+                                        verified.
+                                    </p>
+                                )}
+                            </div>
+                        </div>
+
+                        <div class="row justify-content-center">
+                            <div class="col">
+                                <div class="d-grid gap-2">
+                                    <button
+                                        className="loginButton"
+                                        variant="primary"
+                                        type="submit"
                                     >
-                                        <Button
-                                            block
-                                            className="loginButton"
-                                            variant="primary"
-                                            type="submit"
-                                        >
-                                            Submit
-                                        </Button>
-                                    </Form.Group>
-                                </Col>
-                            </Row>
-                        </Form>
-                    </Col>
-                </Row>
-            </Container>
+                                        Submit
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                    <form className="loginForm" onSubmit={handleRegisterNeeded}>
+                        <div class="row">
+                            <div class="col">
+                                <div class="d-grid gap-2">
+                                    <button
+                                        block
+                                        className="registerButton"
+                                        variant="primary"
+                                        type="submit"
+                                    >
+                                        Don't have an account? Register
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
         </div>
     );
 }

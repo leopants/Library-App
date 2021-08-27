@@ -10,9 +10,10 @@ form {
     padding-bottom: 5px;
 }
 .loginForm {
-    border-radius: 20px;
-    margin-bottom: 0px;
+    border-radius: 10px;
+    margin-top: 10px;
     padding-bottom: 5px;
+    padding: 10px;
 }
 .loginText {
     font-size: 30px;
@@ -23,9 +24,32 @@ form {
     justify-content: center;
     align-items: center;
     color: white;
-    background-color: #0a84ff;
+    background-color: #10201a;
     border-radius: 3px;
-    border: solid 1px #0a84ff;
+    border: solid 0px #0a84ff;
+    padding-left: 20px;
+    padding-right: 20px;
+    padding-top: 10px;
+    padding-bottom: 10px;
+}
+.loginButton:hover {
+    cursor: pointer;
+    background-color: #0b462e;
+    /*#49c593*/
+}
+
+.registerButton {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: white;
+    background-color: #ffffff00;
+    border-radius: 3px;
+    border: solid 0px #0a84ff;
+    padding-left: 20px;
+    padding-right: 20px;
+    padding-top: 10px;
+    padding-bottom: 10px;
 }
 .errorP {
     color: red;
@@ -34,9 +58,30 @@ form {
     line-height: 20px;
     padding-top: 10px;
 }
+
 input {
-    border-radius: 3px;
-    border: solid 1px #707070;
+    border-radius: 0px;
+    border: solid 0px #7e181800;
     justify-content: right;
     display: inline-block;
+    background-color: rgba(0, 0, 0, 0);
+    color: white;
+    border: none;
+    outline: none;
+    height: 30px;
+    transition: height 1s;
+    -webkit-transition: height 1s;
+}
+.form-outline {
+    color: rgba(255, 255, 255, 0);
+}
+::placeholder {
+    color: darkgrey;
+}
+
+.registerButton:hover {
+    cursor: pointer;
+}
+body {
+    border-radius: 0px;
 }
