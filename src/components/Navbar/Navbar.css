@@ -1,0 +1,14 @@
+.navbarDiv {
+    background-color: white;
+}
+
+.nav-link {
+    color: #000000;
+    text-decoration: none;
+}
+.nav-link:hover {
+    color: #49c593;
+}
+.nav-link:focus {
+    color: #000000;
+}

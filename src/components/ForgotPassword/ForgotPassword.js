@@ -1,14 +1,13 @@
 import React, { useRef, useState } from "react";
 import { KeyFill, PersonCircle } from "react-bootstrap-icons";
 import { Form, Button, Card, Alert } from "react-bootstrap";
-import "./Login.css";
 import logo from "../../logo.png";
 import { useAuth } from "../../contexts/AuthContext";
 import { Link, useHistory } from "react-router-dom";
 
 const axios = require("axios");
 
-export default function Login(props) {
+export default function ForgotPassword(props) {
     const [email, setEmail] = React.useState("");
     const [username, setUserName] = React.useState("");
     const [firstName, setFirstName] = React.useState("");
@@ -17,12 +16,11 @@ export default function Login(props) {
     const [loginError, setLoginError] = React.useState(false);
     const history = useHistory();
 
-    const { login } = useAuth();
+    const { resetPassword } = useAuth();
     const [error, setError] = useState("");
     const [loading, setLoading] = useState("");
     const emailRef = useRef();
-    const passwordRef = useRef();
-    const passwordConfirmRef = useRef();
+    const [message, setMessage] = React.useState("");
 
     const handleSignUp = async (e) => {
         e.preventDefault();
@@ -30,10 +28,10 @@ export default function Login(props) {
         try {
             setError("");
             setLoading(true);
-            await login(emailRef.current.value, passwordRef.current.value);
-            history.push("/");
+            await resetPassword(emailRef.current.value);
+            setMessage("Check your inbox for further intructions");
         } catch {
-            setError("Failed to signin");
+            setError("Failed to reset password");
         }
         setLoading(false);
     };
@@ -84,8 +82,9 @@ export default function Login(props) {
         <>
             <Card>
                 <Card.Body>
-                    <h2 className="text-center mb-4">Log In</h2>
+                    <h2 className="text-center mb-4">Password Reset</h2>
                     {error && <Alert variant="danger">{error}</Alert>}
+                    {message && <Alert variant="success">{message}</Alert>}
                     <Form onSubmit={handleSignUp}>
                         <Form.Group id="email">
                             <Form.Label>Email</Form.Label>
@@ -95,25 +94,17 @@ export default function Login(props) {
                                 required
                             />
                         </Form.Group>
-                        <Form.Group id="password">
-                            <Form.Label>Password</Form.Label>
-                            <Form.Control
-                                type="password"
-                                ref={passwordRef}
-                                required
-                            />
-                        </Form.Group>
 
                         <Button
                             disable={loading}
                             className="w-100 mt-2"
                             type="submit"
                         >
-                            Log In
+                            Reset Password
                         </Button>
                     </Form>
                     <div className="w-100 text-center mt-3">
-                        <Link to="/forgot-password">Forgot Password?</Link>
+                        <Link to="/login">Login</Link>
                     </div>
                 </Card.Body>
             </Card>
