@@ -2,13 +2,57 @@
     background-color: white;
 }
 
-.nav-link {
-    color: #000000;
+.work-sans-brand {
+    font-family: "Work Sans", sans-serif;
+    font-weight: 600;
+    font-size: 32px;
     text-decoration: none;
-}
-.nav-link:hover {
-    color: #49c593;
-}
-.nav-link:focus {
     color: #000000;
+}
+.work-sans-brand:hover {
+    color: #000000;
+}
+.work-sans-brand:focus {
+    color: #000000;
+}
+
+a.nav-link {
+    font-family: "Work Sans", sans-serif;
+    font-weight: 600;
+    font-size: 16px;
+    text-decoration: none;
+    color: #000000;
+}
+a.nav-link:hover {
+    color: #000000;
+}
+
+.work-sans-nav {
+    font-family: "Work Sans", sans-serif;
+    font-weight: 600;
+    font-size: 16px;
+    text-decoration: none;
+    color: #000000;
+}
+.work-sans-nav:hover {
+    color: #000000;
+}
+.work-sans-nav:focus {
+    color: #fff;
+}
+
+.nav-link-active {
+    font-family: "Work Sans", sans-serif;
+    font-weight: 600;
+    font-size: 16px;
+    text-decoration: none;
+    color: #fff;
+}
+
+.nav-link-active:hover {
+    font-family: "Work Sans", sans-serif;
+    font-weight: 600;
+    font-size: 16px;
+    text-decoration: none;
+    color: #fff;
 }

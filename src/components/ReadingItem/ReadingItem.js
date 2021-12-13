@@ -1,8 +1,8 @@
 import React from "react";
 import "./ReadingItem.css";
-import "../Navbar/Navbar";
+import "../NavBar/NavBar";
 import logo from "../../logo.png";
-import Navbar from "../Navbar/Navbar";
+import Navbar from "../NavBar/NavBar";
 import Dashboard from "../Dashboard/Dashboard";
 const axios = require("axios");
 

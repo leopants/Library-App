@@ -1,9 +1,12 @@
 import "./App.css";
 import Login from "./components/Login/Login";
 import Signup from "./components/Signup/Signup";
+import Stats from "./components/Stats/Stats";
+import Lists from "./components/Lists/Lists";
+import Profile from "./components/Profile/Profile";
 import Dashboard from "./components/Dashboard/Dashboard";
 import ReadingItem from "./components/ReadingItem/ReadingItem";
-import Navbar from "./components/Navbar/Navbar";
+import Navbar from "./components/NavBar/NavBar";
 import ForgotPassword from "./components/ForgotPassword/ForgotPassword";
 import { Dash } from "react-bootstrap-icons";
 import { Container, Button } from "react-bootstrap";
@@ -16,10 +19,11 @@ import { BrowserRouter as Router, Switch, Route } from "react-router-dom";
 export default function App() {
     return (
         <Container
-            className="d-flex align-items-center justify-content-center"
-            style={{ minHeight: "100vh" }}
+            fluid
+            className=" g-0 align-items-center justify-content-center"
+            style={{ minHeight: "100vh", backgroundColor: "#F3E9D4" }}
         >
-            <div className="w-100" style={{ maxWidth: "400px" }}>
+            <div>
                 <Router>
                     <AuthProvider>
                         <Switch>
@@ -30,6 +34,9 @@ export default function App() {
                             />
                             <Route exact path="/signup" component={Signup} />
                             <Route exact path="/login" component={Login} />
+                            <Route exact path="/stats" component={Stats} />
+                            <Route exact path="/lists" component={Lists} />
+                            <Route exact path="/profile" component={Profile} />
                             <Route
                                 exact
                                 path="/forgot-password"
