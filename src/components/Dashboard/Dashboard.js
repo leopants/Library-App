@@ -4,23 +4,69 @@ import "./Dashboard.css";
 import "../NavBar/NavBar";
 import NavBar from "../NavBar/NavBar";
 import AddButtons from "../AddButtons/AddButtons";
-import ReadingItem from "../ReadingItem/ReadingItem";
 import FriendsList from "../FriendsList/FriendsList";
 import BookCard from "../BookCard/BookCard";
-import { Button, Container, Row, Image, Table } from "react-bootstrap";
+import { Button, Container, Image, Table } from "react-bootstrap";
 import { useAuth } from "../../contexts/AuthContext";
 import shelf from "../../Top Shelf.svg";
-import { FileEaselFill } from "react-bootstrap-icons";
+import firebase from "firebase/compat/app";
+import {
+    collection,
+    query,
+    where,
+    doc,
+    getDoc,
+    getDocs,
+} from "firebase/firestore";
+require("firebase/compat/firestore");
 const axios = require("axios");
 
 export default function Dashboard() {
-    const [error, setError] = useState("");
+    const db = firebase.firestore();
     const { currentUser, logout } = useAuth();
+
+    const [userFirstName, setUserFirstName] = useState("");
+    const [error, setError] = useState("");
+    const [bookArray, setBookArray] = useState([]);
     const history = useHistory();
     let isAM = true;
     var today = new Date();
     var time = today.getHours();
-    console.log(time);
+
+    useEffect(() => {
+        async function fetchData() {
+            const q = await query(
+                collection(db, "users"),
+                where("email", "==", currentUser.email)
+            );
+            const querySnapshot = await getDocs(q);
+            querySnapshot.forEach((doc) => {
+                setUserFirstName(doc.data().firstName);
+                var targetList;
+                doc.data().lists.forEach((element) => {
+                    if (element.listName == "Reading List") {
+                        targetList = element.books;
+                    }
+                });
+                var bookList = [];
+                targetList.forEach(async (book) => {
+                    const docSnap = await getFirestoreDoc(book.bookId);
+                    if (docSnap.exists()) {
+                        bookList.push(docSnap.data());
+                        //setBookArray((prevArray) => [...prevArray, bookList]); idk man please remember this has to do with keeping prevArray
+                        setBookArray(bookList);
+                    }
+                });
+            });
+        }
+
+        async function getFirestoreDoc(bookId) {
+            const docRef = doc(db, "books", bookId);
+            const docSnap = await getDoc(docRef);
+            return docSnap;
+        }
+        fetchData();
+    }, []);
 
     function getGreeting(time) {
         if (time < 12) {
@@ -29,16 +75,18 @@ export default function Dashboard() {
         return isAM;
     }
 
-    async function getBookCover(bookISBN) {
-        let url = "https://covers.openlibrary.org/b/isbn/";
-        url = url + bookISBN + "-M.jpg";
-        let bookCoverImage = axios
-            .get(url, {
-                responseType: "arraybuffer",
-            })
-            .then((response) =>
-                Buffer.from(response.data, "binary").toString("base64")
-            );
+    async function getAPIBook(title, authorFirst, authorLast) {
+        title = "the shining";
+        authorFirst = "stephen";
+        let url =
+            "https://www.googleapis.com/books/v1/volumes?q=inauthor:" +
+            authorFirst +
+            "+intitle:" +
+            title +
+            "&key=AIzaSyBA-Q3JKT8Y8qJ2Aw7V4oSJTCDT-CiOsAM";
+        axios
+            .get(url)
+            .then((response) => console.log(response.data.items[0].volumeInfo));
     }
 
     async function handleLogout() {
@@ -67,7 +115,7 @@ export default function Dashboard() {
                             fontFamily: "Work Sans",
                         }}
                     >
-                        Good Morning, Leo!
+                        Good Morning, {userFirstName}!
                     </p>
                 )}
                 {getGreeting() == false && (
@@ -80,7 +128,7 @@ export default function Dashboard() {
                             fontFamily: "Work Sans",
                         }}
                     >
-                        Good Afternoon, Leo!
+                        Good Afternoon, {userFirstName}!
                     </p>
                 )}
                 <div class="row justify-content-center g-0">
@@ -103,19 +151,18 @@ export default function Dashboard() {
                         <Table responsive borderless>
                             <tbody>
                                 <tr>
-                                    <td>
-                                        <BookCard />
-                                    </td>
-
-                                    <td>
-                                        <BookCard />
-                                    </td>
-                                    <td>
-                                        <BookCard />
-                                    </td>
-                                    <td>
-                                        <BookCard />
-                                    </td>
+                                    {bookArray.map((item) => {
+                                        return (
+                                            <td>
+                                                <BookCard
+                                                    author={item.author}
+                                                    title={item.title}
+                                                    pageCount={item.pageCount}
+                                                    imageLink={item.imageLink}
+                                                />
+                                            </td>
+                                        );
+                                    })}
                                 </tr>
                             </tbody>
                         </Table>
@@ -134,6 +181,7 @@ export default function Dashboard() {
                             <Table responsive borderless>
                                 <tbody>
                                     <tr>
+                                        {console.log(bookArray)}
                                         <td>
                                             <BookCard />
                                         </td>
@@ -152,12 +200,6 @@ export default function Dashboard() {
                             </Table>
 
                             <Image fluid src={shelf}></Image>
-                        </div>
-
-                        <div>
-                            <Button variant="link" onClick={handleLogout}>
-                                Log Out
-                            </Button>
                         </div>
                     </div>
                     <div class="col-sm-3">

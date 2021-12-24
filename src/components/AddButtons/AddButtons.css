@@ -1,0 +1,29 @@
+body {
+    font-family: "Work Sans" !important;
+}
+
+.modelContent {
+    border: none;
+    border-radius: 0px;
+}
+
+.btn-check:active + .btn-outline-dark,
+.btn-check:checked + .btn-outline-dark,
+.btn-outline-dark.active,
+.btn-outline-dark.dropdown-toggle.show,
+.btn-outline-dark:active {
+    color: black !important;
+    background-color: #dc8920 !important;
+    border-radius: 30px;
+    padding-inline: 20px;
+    font-family: "Work Sans";
+}
+
+.btn-check + .btn-outline-dark {
+    color: black !important;
+    border-radius: 30px;
+    border: none;
+    background-color: white;
+    padding-inline: 20px;
+    font-family: "Work Sans";
+}

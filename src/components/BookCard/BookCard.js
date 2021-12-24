@@ -10,14 +10,16 @@ import mypic from "../../profpic.jpg";
 import bookTestCover from "../../Rectangle 37.svg";
 const axios = require("axios");
 
-export default function BookCard(title, author, currentPage, totalPages) {
+export default function BookCard(props) {
     const [error, setError] = useState("");
     const { currentUser, logout } = useAuth();
     const history = useHistory();
-    title = "Jane";
-    author = "Kev Roba";
-    currentPage = 213;
-    totalPages = 412;
+
+    const title = props.title;
+    const author = props.author;
+    const totalPages = props.pageCount;
+    const imageLink = props.imageLink;
+    const currentPage = 28;
 
     return (
         <div class="col">
@@ -31,7 +33,7 @@ export default function BookCard(title, author, currentPage, totalPages) {
                     }}
                 >
                     <Card.Img
-                        src={bookTestCover}
+                        src={imageLink}
                         fluid
                         style={{
                             width: "130px",
@@ -86,7 +88,7 @@ export default function BookCard(title, author, currentPage, totalPages) {
                                 </p>
                                 <p
                                     style={{
-                                        fontSize: "20px",
+                                        fontSize: "18px",
                                         fontFamily: "Work Sans",
                                         fontWeight: 500,
                                         margin: "0px",

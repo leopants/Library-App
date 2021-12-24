@@ -56,3 +56,11 @@ a.nav-link:hover {
     text-decoration: none;
     color: #fff;
 }
+
+ul.li {
+    float: right;
+}
+
+.nav {
+    background-color: "#E7A148" !important;
+}

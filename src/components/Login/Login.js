@@ -1,14 +1,35 @@
 import React, { useRef, useState } from "react";
 import { KeyFill, PersonCircle } from "react-bootstrap-icons";
-import { Form, Button, Card, Alert } from "react-bootstrap";
+import {
+    Form,
+    Button,
+    Card,
+    Alert,
+    Row,
+    Col,
+    Container,
+} from "react-bootstrap";
 import "./Login.css";
 import logo from "../../logo.png";
 import { useAuth } from "../../contexts/AuthContext";
 import { Link, useHistory } from "react-router-dom";
+import firebase from "firebase/compat/app";
+import {
+    collection,
+    query,
+    where,
+    doc,
+    getDoc,
+    getDocs,
+    setDoc,
+} from "firebase/firestore";
+require("firebase/compat/firestore");
 
 const axios = require("axios");
 
 export default function Login(props) {
+    const db = firebase.firestore();
+
     const [email, setEmail] = React.useState("");
     const [username, setUserName] = React.useState("");
     const [firstName, setFirstName] = React.useState("");
@@ -36,6 +57,17 @@ export default function Login(props) {
             setError("Failed to signin");
         }
         setLoading(false);
+    };
+
+    const onGetBooks = async () => {
+        try {
+            const querySnapshot = await getDocs(collection(db, "books"));
+            querySnapshot.forEach((doc) => {
+                console.log(doc.id, " => ", doc.data());
+            });
+        } catch (error) {
+            console.log(error);
+        }
     };
 
     const handleSubmit = (event) => {
@@ -81,45 +113,127 @@ export default function Login(props) {
     const handleRegisterNeeded = (event) => {};
 
     return (
-        <>
-            <Card>
-                <Card.Body>
-                    <h2 className="text-center mb-4">Log In</h2>
-                    {error && <Alert variant="danger">{error}</Alert>}
-                    <Form onSubmit={handleSignUp}>
-                        <Form.Group id="email">
-                            <Form.Label>Email</Form.Label>
-                            <Form.Control
-                                type="email"
-                                ref={emailRef}
-                                required
-                            />
-                        </Form.Group>
-                        <Form.Group id="password">
-                            <Form.Label>Password</Form.Label>
-                            <Form.Control
-                                type="password"
-                                ref={passwordRef}
-                                required
-                            />
-                        </Form.Group>
-
-                        <Button
-                            disable={loading}
-                            className="w-100 mt-2"
-                            type="submit"
+        <Container
+            fluid
+            style={{
+                height: "100vh",
+                backgroundColor: "#fff",
+                fontFamily: "Work Sans",
+            }}
+        >
+            <div className="row g-0">
+                <div
+                    class="col-md-6 d-sm-none d-md-block"
+                    style={{ backgroundColor: "#6A6363" }}
+                ></div>
+                <Col
+                    style={{ height: "100vh" }}
+                    md={{ span: 6, offset: 0 }}
+                    sm={{ span: 12, offset: 0 }}
+                >
+                    <div class="row g-0 d-flex align-items-center">
+                        <Card
+                            style={{
+                                border: "none",
+                                borderRadius: "0px",
+                                paddingTop: "12rem",
+                                paddingLeft: "10%",
+                                paddingRight: "10%",
+                            }}
                         >
-                            Log In
-                        </Button>
-                    </Form>
-                    <div className="w-100 text-center mt-3">
-                        <Link to="/forgot-password">Forgot Password?</Link>
+                            <Card.Body>
+                                <h2
+                                    className="text-center mb-4"
+                                    style={{ fontSize: 32, fontWeight: 600 }}
+                                >
+                                    Login
+                                </h2>
+                                {error && (
+                                    <Alert variant="danger">{error}</Alert>
+                                )}
+                                <Form onSubmit={handleSignUp}>
+                                    <Form.Group
+                                        id="email"
+                                        className="formGroup"
+                                    >
+                                        <Form.Label className="formLabel">
+                                            Email
+                                        </Form.Label>
+                                        <Form.Control
+                                            style={{
+                                                backgroundColor: "#f2dcb1",
+                                                border: "none",
+                                            }}
+                                            type="email"
+                                            ref={emailRef}
+                                            required
+                                        />
+                                    </Form.Group>
+                                    <Form.Group
+                                        id="password"
+                                        className="formGroup"
+                                    >
+                                        <Form.Label className="formLabel">
+                                            Password
+                                        </Form.Label>
+                                        <Form.Control
+                                            style={{
+                                                backgroundColor: "#f2dcb1",
+                                                border: "none",
+                                            }}
+                                            type="password"
+                                            ref={passwordRef}
+                                            required
+                                        />
+                                    </Form.Group>
+
+                                    <div
+                                        class="mb-3"
+                                        style={{
+                                            display: "flex",
+                                            justifyContent: "space-between",
+                                        }}
+                                    >
+                                        <div style={{ color: "#4C70FF" }}>
+                                            <Link
+                                                style={{
+                                                    textDecoration: "none",
+                                                }}
+                                                to="/signup"
+                                            >
+                                                Need an account? Sign Up
+                                            </Link>
+                                        </div>
+                                        <div style={{ color: "#4C70FF" }}>
+                                            <Link
+                                                style={{
+                                                    textDecoration: "none",
+                                                }}
+                                                to="/forgot-password"
+                                            >
+                                                Forgot Password?
+                                            </Link>
+                                        </div>
+                                    </div>
+                                    <Button
+                                        disable={loading}
+                                        style={{
+                                            borderRadius: "40px",
+                                            backgroundColor: "#DC8920",
+                                            borderWidth: "0px",
+                                            padding: "10px",
+                                        }}
+                                        className="w-100 mt-2"
+                                        type="submit"
+                                    >
+                                        Sign Up
+                                    </Button>
+                                </Form>
+                            </Card.Body>
+                        </Card>
                     </div>
-                </Card.Body>
-            </Card>
-            <div className="w-100 text-center mt-2">
-                Need an account? <Link to="/signup">Sign up</Link>
+                </Col>
             </div>
-        </>
+        </Container>
     );
 }

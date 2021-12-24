@@ -1,16 +1,32 @@
-import React, { useState } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { Link, useHistory } from "react-router-dom";
 import "./AddButtons.css";
 import "../NavBar/NavBar";
 import NavBar from "../NavBar/NavBar";
 import ReadingItem from "../ReadingItem/ReadingItem";
-import { Button, Container, Row } from "react-bootstrap";
+import { Button, Container, Row, Col, Form } from "react-bootstrap";
 import { useAuth } from "../../contexts/AuthContext";
+import firebase from "firebase/compat/app";
+import {
+    collection,
+    query,
+    where,
+    doc,
+    getDoc,
+    getDocs,
+} from "firebase/firestore";
+require("firebase/compat/firestore");
 const axios = require("axios");
 
 export default function AddButtons() {
+    const db = firebase.firestore();
+
     const [error, setError] = useState("");
     const { currentUser, logout } = useAuth();
+    const [shelfArray, setShelfArray] = useState([]);
+    const [checkedShelves, setCheckedShelves] = useState([]);
+    const titleRef = useRef();
+    const authorsNameRef = useRef();
     const history = useHistory();
 
     async function getBookCover(bookISBN) {
@@ -25,6 +41,24 @@ export default function AddButtons() {
             );
     }
 
+    useEffect(() => {
+        async function fetchData() {
+            const q = await query(
+                collection(db, "users"),
+                where("email", "==", currentUser.email)
+            );
+            const querySnapshot = await getDocs(q);
+            querySnapshot.forEach((doc) => {
+                var targetList = [];
+                doc.data().lists.forEach((element) => {
+                    targetList.push(element.listName);
+                });
+                setShelfArray(targetList);
+            });
+        }
+        fetchData();
+    }, []);
+
     async function handleLogout() {
         setError("");
 
@@ -37,6 +71,40 @@ export default function AddButtons() {
         console.log(error);
     }
 
+    async function handleAddBook() {
+        try {
+            //add the code for adding this book to that users selected lists
+            console.log(checkedShelves);
+        } catch (logoutError) {
+            setError("Failed to log out");
+        }
+    }
+
+    async function handleAddShelf() {
+        setError("");
+
+        try {
+            console.log("helllllooooo");
+        } catch (logoutError) {
+            setError("Failed to log out");
+        }
+        console.log(error);
+    }
+
+    function handleButtonPress(e) {
+        try {
+            if (e.target.checked == true) {
+                setCheckedShelves((prevArray) => [...prevArray, e.target.id]);
+            } else {
+                setCheckedShelves((prevArray) =>
+                    prevArray.filter((shelf) => shelf != e.target.id)
+                );
+            }
+        } catch (logoutError) {
+            setError("Failed to log out");
+        }
+    }
+
     return (
         <div>
             <div class="row justify-content-center g-0 mt-5">
@@ -44,11 +112,13 @@ export default function AddButtons() {
                     style={{
                         backgroundColor: "#FFFFFA",
                         border: "0px",
-                        width: "30%",
+                        width: "80px",
                         borderRadius: "17px",
                         padding: "5px",
                         boxShadow: "0px 0px 26px rgba(0,0,0,.25)",
                     }}
+                    data-bs-toggle="modal"
+                    data-bs-target="#addBookModal"
                 >
                     <svg
                         xmlns="http://www.w3.org/2000/svg"
@@ -74,11 +144,13 @@ export default function AddButtons() {
                     style={{
                         backgroundColor: "#FFFFFA",
                         border: "0px",
-                        width: "30%",
+                        width: "80px",
                         borderRadius: "17px",
                         padding: "5px",
                         boxShadow: "0px 0px 26px rgba(0,0,0,.25)",
                     }}
+                    data-bs-toggle="modal"
+                    data-bs-target="#addShelfModal"
                 >
                     <svg
                         width="43"
@@ -99,6 +171,196 @@ export default function AddButtons() {
                         />
                     </svg>
                 </Button>
+            </div>
+            <div>
+                <div
+                    class="modal fade"
+                    id="addBookModal"
+                    tabindex="-1"
+                    aria-labelledby="exampleModalLabel"
+                    aria-hidden="true"
+                >
+                    <div class="modal-dialog modal-dialog-centered">
+                        <div
+                            class="modal-content"
+                            style={{
+                                border: "none",
+                                borderRadius: "0px",
+                                backgroundColor: "#F3E9D4",
+                            }}
+                        >
+                            <div
+                                class="modal-header"
+                                style={{
+                                    border: "none",
+                                }}
+                            >
+                                <h5
+                                    class="modal-title"
+                                    id="exampleModalLabel"
+                                    style={{
+                                        fontWeight: "700",
+                                        fontSize: "30px",
+                                    }}
+                                >
+                                    Add Book
+                                </h5>
+                                <button
+                                    type="button"
+                                    class="btn-close"
+                                    data-bs-dismiss="modal"
+                                    aria-label="Close"
+                                ></button>
+                            </div>
+                            <div class="modal-body">
+                                <Container fluid>
+                                    <div class="row justify-content-center g-0">
+                                        <Col sm={6}>
+                                            <Form onSubmit={handleLogout}>
+                                                <Form.Group
+                                                    id="title"
+                                                    className="formGroup"
+                                                >
+                                                    <Form.Label className="formLabel">
+                                                        Title
+                                                    </Form.Label>
+                                                    <Form.Control
+                                                        style={{
+                                                            backgroundColor:
+                                                                "#fff",
+                                                            border: "none",
+                                                        }}
+                                                        type="text"
+                                                        ref={titleRef}
+                                                        required
+                                                    />
+                                                </Form.Group>
+                                                <Form.Group
+                                                    id="author"
+                                                    className="formGroup"
+                                                >
+                                                    <Form.Label className="formLabel">
+                                                        Author's Name
+                                                    </Form.Label>
+                                                    <Form.Control
+                                                        style={{
+                                                            backgroundColor:
+                                                                "#fff",
+                                                            border: "none",
+                                                        }}
+                                                        type="text"
+                                                        ref={authorsNameRef}
+                                                        required
+                                                    />
+                                                </Form.Group>
+                                            </Form>
+                                        </Col>
+                                        <Col
+                                            sm={6}
+                                            style={{
+                                                paddingLeft: "30px",
+                                            }}
+                                        >
+                                            <p>Where should this book go?</p>
+                                            <Form>
+                                                {shelfArray.map((item, i) => {
+                                                    return (
+                                                        <div
+                                                            style={{
+                                                                paddingBottom:
+                                                                    "10px",
+                                                            }}
+                                                        >
+                                                            <input
+                                                                type="checkbox"
+                                                                class="btn-check"
+                                                                onClick={
+                                                                    handleButtonPress
+                                                                }
+                                                                id={item}
+                                                                autocomplete="off"
+                                                            />
+                                                            <label
+                                                                class="btn btn-outline-dark"
+                                                                for={item}
+                                                            >
+                                                                {item}
+                                                            </label>
+                                                        </div>
+                                                    );
+                                                })}
+                                            </Form>
+                                        </Col>
+                                    </div>
+                                </Container>
+                            </div>
+                            <div
+                                class="modal-footer justify-content-center"
+                                style={{ border: "none" }}
+                            >
+                                <button
+                                    type="button"
+                                    class="btn"
+                                    onClick={handleAddBook}
+                                    data-bs-dismiss="modal"
+                                    style={{
+                                        backgroundColor: "#dc8920",
+                                        borderRadius: "25px",
+                                        width: "90px",
+                                    }}
+                                >
+                                    Done
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div>
+                <div
+                    class="modal fade"
+                    id="addShelfModal"
+                    tabindex="-1"
+                    aria-labelledby="exampleModalLabel"
+                    aria-hidden="true"
+                >
+                    <div class="modal-dialog modal-dialog-centered">
+                        <div
+                            class="modal-content"
+                            style={{ border: "none", borderRadius: "0px" }}
+                        >
+                            <div
+                                class="modal-header"
+                                style={{ border: "none" }}
+                            >
+                                <h5 class="modal-title" id="exampleModalLabel">
+                                    Add Shelf
+                                </h5>
+                                <button
+                                    type="button"
+                                    class="btn-close"
+                                    data-bs-dismiss="modal"
+                                    aria-label="Close"
+                                ></button>
+                            </div>
+                            <div class="modal-body">...</div>
+                            <div
+                                class="modal-footer justify-content-center"
+                                style={{ border: "none" }}
+                            >
+                                <button
+                                    type="button"
+                                    class="btn"
+                                    data-bs-dismiss="modal"
+                                    onClick={handleAddShelf}
+                                    style={{ backgroundColor: "#e7a148" }}
+                                >
+                                    Done
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     );

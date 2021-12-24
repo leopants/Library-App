@@ -1,0 +1,30 @@
+.formGroup {
+    padding-bottom: 20px;
+}
+
+.formLabel {
+    margin-bottom: 4px;
+    padding-bottom: 0px;
+    font-weight: 500;
+}
+
+.submitButton {
+    border-radius: 15px;
+}
+
+.form-control {
+    border: none;
+    border-radius: 0px !important;
+}
+
+.form-control:focus {
+    border-color: #28a745 !important;
+    box-shadow: 0 0 0 0.2rem rgba(104, 4, 90, 0.25) !important;
+}
+
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus,
+input:-webkit-autofill:active {
+    transition: background-color 5000s ease-in-out 0s;
+}

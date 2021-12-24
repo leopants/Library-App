@@ -3,29 +3,40 @@ import "./NavBar.css";
 import { Container, Nav, Navbar } from "react-bootstrap";
 import { NavLink, Link } from "react-router-dom";
 
-function NavBar() {
+export default function NavBar() {
     return (
-        <div class="container-fluid g-0" className="navbarDiv">
-            <div class="row g-0 justify-content-center">
-                <Navbar
-                    class="navbar navbar-light  p-2 ps-5"
-                    style={{ backgroundColor: "#E7A148" }}
-                    variant="light"
+        <nav
+            class="navbar navbar-expand-lg navbar-light"
+            style={{ backgroundColor: "#E7A148" }}
+        >
+            <div class="container-fluid">
+                <Navbar.Brand
+                    as={NavLink}
+                    exact
+                    to="/"
+                    className="work-sans-brand navbar-brand ms-4"
+                    style={{ fontSize: "32px" }}
                 >
-                    <Container fluid>
-                        <div>
-                            <Navbar.Brand
-                                as={NavLink}
-                                exact
-                                to="/"
-                                className="work-sans-brand ms-5"
-                                style={{ fontSize: "32px" }}
-                            >
-                                Reading Pal
-                            </Navbar.Brand>
-                        </div>
-                        <div class="nav pe-3">
-                            {/* Add */}
+                    Reading Pal
+                </Navbar.Brand>
+                <button
+                    class="navbar-toggler me-4"
+                    type="button"
+                    data-bs-toggle="collapse"
+                    data-bs-target="#navbarSupportedContent"
+                    aria-controls="navbarSupportedContent"
+                    aria-expanded="false"
+                    aria-label="Toggle navigation"
+                >
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div
+                    class="collapse navbar-collapse"
+                    id="navbarSupportedContent"
+                    style={{ justifyContent: "end" }}
+                >
+                    <ul class="navbar-nav me-0 mb-2 mb-lg-0">
+                        <div class="nav pe-3 ps-4">
                             <Nav.Link
                                 as={NavLink}
                                 exact
@@ -37,7 +48,6 @@ function NavBar() {
                             >
                                 Dashboard
                             </Nav.Link>
-                            {/* Wishlist */}
                             <Nav.Link
                                 as={NavLink}
                                 to="/stats"
@@ -48,7 +58,6 @@ function NavBar() {
                             >
                                 Stats
                             </Nav.Link>
-                            {/* Stats */}
                             <Nav.Link
                                 as={NavLink}
                                 to="/lists"
@@ -70,73 +79,9 @@ function NavBar() {
                                 Profile
                             </Nav.Link>
                         </div>
-
-                        <div
-                            class="modal fade"
-                            id="addModal"
-                            tabindex="-1"
-                            aria-labelledby="exampleModalLabel"
-                            aria-hidden="true"
-                        >
-                            <div class="modal-dialog">
-                                <div class="modal-content">
-                                    <div class="modal-header">
-                                        <h5
-                                            class="modal-title"
-                                            id="exampleModalLabel"
-                                        >
-                                            Add Book
-                                        </h5>
-                                        <button
-                                            type="button"
-                                            class="btn-close"
-                                            data-bs-dismiss="modal"
-                                            aria-label="Close"
-                                        ></button>
-                                    </div>
-                                    <div class="modal-body align-items-center">
-                                        <div class="row g-3 align-items-center">
-                                            <div class="col-auto mx-auto">
-                                                <label
-                                                    for="inputPassword6"
-                                                    class="col-form-label"
-                                                >
-                                                    Current Page:
-                                                </label>
-                                            </div>
-                                            <div class="col-auto">
-                                                <input
-                                                    type="text"
-                                                    id="inputPassword6"
-                                                    class="form-control"
-                                                    aria-describedby="passwordHelpInline"
-                                                />
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="modal-footer">
-                                        <button
-                                            type="button"
-                                            class="btn btn-secondary"
-                                            data-bs-dismiss="modal"
-                                        >
-                                            Close
-                                        </button>
-                                        <button
-                                            type="button"
-                                            class="btn btn-primary"
-                                        >
-                                            Save changes
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </Container>
-                </Navbar>
+                    </ul>
+                </div>
             </div>
-        </div>
+        </nav>
     );
 }
-
-export default NavBar;
