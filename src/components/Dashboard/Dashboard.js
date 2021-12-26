@@ -181,7 +181,6 @@ export default function Dashboard() {
                             <Table responsive borderless>
                                 <tbody>
                                     <tr>
-                                        {console.log(bookArray)}
                                         <td>
                                             <BookCard />
                                         </td>

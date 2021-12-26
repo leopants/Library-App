@@ -2,8 +2,6 @@ import React, { useState, useRef, useEffect } from "react";
 import { Link, useHistory } from "react-router-dom";
 import "./AddButtons.css";
 import "../NavBar/NavBar";
-import NavBar from "../NavBar/NavBar";
-import ReadingItem from "../ReadingItem/ReadingItem";
 import { Button, Container, Row, Col, Form } from "react-bootstrap";
 import { useAuth } from "../../contexts/AuthContext";
 import firebase from "firebase/compat/app";
@@ -11,9 +9,10 @@ import {
     collection,
     query,
     where,
-    doc,
-    getDoc,
     getDocs,
+    updateDoc,
+    arrayUnion,
+    addDoc,
 } from "firebase/firestore";
 require("firebase/compat/firestore");
 const axios = require("axios");
@@ -28,18 +27,6 @@ export default function AddButtons() {
     const titleRef = useRef();
     const authorsNameRef = useRef();
     const history = useHistory();
-
-    async function getBookCover(bookISBN) {
-        let url = "https://covers.openlibrary.org/b/isbn/";
-        url = url + bookISBN + "-M.jpg";
-        let bookCoverImage = axios
-            .get(url, {
-                responseType: "arraybuffer",
-            })
-            .then((response) =>
-                Buffer.from(response.data, "binary").toString("base64")
-            );
-    }
 
     useEffect(() => {
         async function fetchData() {
@@ -73,11 +60,148 @@ export default function AddButtons() {
 
     async function handleAddBook() {
         try {
-            //add the code for adding this book to that users selected lists
+            titleRef.current.value = capitalizeText(titleRef.current.value);
+            authorsNameRef.current.value = capitalizeText(
+                authorsNameRef.current.value
+            );
+            //get the user's info
+            const q = await query(
+                collection(db, "users"),
+                where("email", "==", currentUser.email)
+            );
+            const querySnapshot = await getDocs(q);
+            querySnapshot.forEach(async (doc) => {
+                const bookQuery = await query(
+                    collection(db, "books"),
+                    where("volumeInfo.title", "==", titleRef.current.value),
+                    where(
+                        "volumeInfo.author",
+                        "==",
+                        authorsNameRef.current.value
+                    )
+                );
+
+                //see if the book already exists
+                const docSnap = await getDocs(bookQuery);
+                //book does not exist in the database so lets create it from the google api and link it
+                if (docSnap.empty == true) {
+                    const volumeInfo = await getBookFromGoogle(
+                        titleRef.current.value,
+                        authorsNameRef.current.value
+                    );
+                    addBookToFireStore(volumeInfo.items[0].volumeInfo);
+                } else {
+                    //book exists in the books database, create the link between the book to that user's selected lists
+                    const bookId = docSnap.docs[0].id; //get the book id
+                    const usersLists = doc.data().lists; //get the users lists and match a list to those of checkedShelves
+                    usersLists.forEach((list, i) => {
+                        if (checkedShelves.includes(list.listName)) {
+                            //if the name of the list is selected then add the book to that list with the proper params
+                            //this checks if the book is already in the selected list if it is then return nothing, idk if to alert the user
+                            var bookAlreadyExists = false;
+                            list.books.forEach(async (individualBook) => {
+                                if (
+                                    individualBook.bookId == docSnap.docs[0].id
+                                ) {
+                                    //this if means that the book is contained within list.books , which is the users book list then do nothing and set bookAlreadyExists to true
+
+                                    bookAlreadyExists = true;
+                                } else {
+                                    //this else means that the book isn't there so add the book to the user
+                                    var completed = false;
+                                    var currentPage = 0;
+                                    var currentBookId = individualBook.bookId;
+                                    var today = new Date();
+                                    var startedOn =
+                                        1 +
+                                        today.getMonth() +
+                                        "-" +
+                                        today.getDate() +
+                                        "-" +
+                                        today.getFullYear();
+
+                                    console.log(doc.data().lists);
+                                    console.log("noiw u here");
+                                    const workingList = doc(db, "users");
+                                    // await updateDoc(doc, {
+                                    //     lists[i].books : arrayUnion(completed, currentPage, currentBookId, startedOn),
+                                    //     books: arrayUnion("greater_virginia"),
+                                    // });
+                                    bookAlreadyExists = false;
+                                }
+                            });
+                            console.log(list.books);
+                            //list.books.push()
+                        }
+                    });
+                    console.log(docSnap.docs[0].id);
+                }
+
+                //extract the lists and add the book to the selected list
+                //add a date added and if added to readingList then add a date started field
+                //console.log(doc.data());
+            });
+
             console.log(checkedShelves);
         } catch (logoutError) {
             setError("Failed to log out");
         }
+    }
+
+    function capitalizeText(text) {
+        text = text
+            .toLowerCase()
+            .split(" ")
+            .map((s) => s.charAt(0).toUpperCase() + s.substring(1))
+            .join(" ");
+
+        return text;
+    }
+
+    async function getBookFromGoogle(title, authorsName) {
+        var authorFirst = authorsName.split(" ")[0];
+        let url =
+            "https://www.googleapis.com/books/v1/volumes?q=inauthor:" +
+            authorFirst +
+            "+intitle:" +
+            title +
+            "&key=AIzaSyBA-Q3JKT8Y8qJ2Aw7V4oSJTCDT-CiOsAM";
+        const resp = await axios.get(url);
+
+        if (resp.status == 200) {
+            return resp.data;
+        }
+    }
+
+    async function addBookToFireStore(volumeInfo) {
+        volumeInfo["imageLink"] = volumeInfo.imageLinks.thumbnail;
+        volumeInfo["author"] = volumeInfo.authors[0];
+        volumeInfo["category"] = capitalizeText(volumeInfo.categories[0]);
+        volumeInfo["publishYear"] = volumeInfo.publishedDate;
+
+        delete volumeInfo["authors"];
+        delete volumeInfo["allowAnonLogging"];
+        delete volumeInfo["canonicalVolumeLink"];
+        delete volumeInfo["categories"];
+        delete volumeInfo["contentVersion"];
+        delete volumeInfo["industryIdentifiers"];
+        delete volumeInfo["infoLink"];
+        delete volumeInfo["language"];
+        delete volumeInfo["previewLink"];
+        delete volumeInfo["printType"];
+        delete volumeInfo["publisher"];
+        delete volumeInfo["readingModes"];
+        delete volumeInfo["ratingsCount"];
+        delete volumeInfo["imageLinks"];
+        delete volumeInfo["panelizationSummary"];
+        delete volumeInfo["publishedDate"];
+        delete volumeInfo["maturityRating"];
+
+        const docRef = await addDoc(collection(db, "books"), {
+            volumeInfo,
+        });
+
+        console.log(volumeInfo);
     }
 
     async function handleAddShelf() {
@@ -262,6 +386,7 @@ export default function AddButtons() {
                                             }}
                                         >
                                             <p>Where should this book go?</p>
+
                                             <Form>
                                                 {shelfArray.map((item, i) => {
                                                     return (
