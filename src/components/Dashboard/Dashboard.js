@@ -42,21 +42,29 @@ export default function Dashboard() {
             const querySnapshot = await getDocs(q);
             querySnapshot.forEach((doc) => {
                 setUserFirstName(doc.data().firstName);
-                var targetList;
-                doc.data().lists.forEach((element) => {
-                    if (element.listName == "Reading List") {
-                        targetList = element.books;
-                    }
-                });
-                var bookList = [];
-                targetList.forEach(async (book) => {
-                    const docSnap = await getFirestoreDoc(book.bookId);
-                    if (docSnap.exists()) {
-                        bookList.push(docSnap.data());
-                        //setBookArray((prevArray) => [...prevArray, bookList]); idk man please remember this has to do with keeping prevArray
-                        setBookArray(bookList);
-                    }
-                });
+            });
+
+            const listQuery = await query(
+                collection(db, "userlists"),
+                where("useremail", "==", currentUser.email)
+            );
+            const listSnapshot = await getDocs(listQuery);
+            var targetList;
+            listSnapshot.forEach((userList) => {
+                if (userList.data().listname == "Reading List") {
+                    targetList = userList.data().books;
+                }
+            });
+
+            var bookList = [];
+            targetList.forEach(async (book) => {
+                const docSnap = await getFirestoreDoc(book.bookId);
+                if (docSnap.exists()) {
+                    bookList.push(docSnap.data());
+                    //setBookArray((prevArray) => [...prevArray, bookList]); //idk man please remember this has to do with keeping prevArray
+
+                    setBookArray([...bookList]);
+                }
             });
         }
 
@@ -151,9 +159,15 @@ export default function Dashboard() {
                         <Table responsive borderless>
                             <tbody>
                                 <tr>
-                                    {bookArray.map((item) => {
+                                    {console.log(bookArray)}
+                                    {bookArray.map((item, i) => {
                                         return (
-                                            <td>
+                                            <td
+                                                key={i}
+                                                style={{
+                                                    width: "350px !important",
+                                                }}
+                                            >
                                                 <BookCard
                                                     author={item.author}
                                                     title={item.title}

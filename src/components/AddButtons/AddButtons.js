@@ -13,6 +13,8 @@ import {
     updateDoc,
     arrayUnion,
     addDoc,
+    doc,
+    getDoc,
 } from "firebase/firestore";
 require("firebase/compat/firestore");
 const axios = require("axios");
@@ -31,18 +33,17 @@ export default function AddButtons() {
     useEffect(() => {
         async function fetchData() {
             const q = await query(
-                collection(db, "users"),
-                where("email", "==", currentUser.email)
+                collection(db, "userlists"),
+                where("useremail", "==", currentUser.email)
             );
             const querySnapshot = await getDocs(q);
+            var targetList = [];
             querySnapshot.forEach((doc) => {
-                var targetList = [];
-                doc.data().lists.forEach((element) => {
-                    targetList.push(element.listName);
-                });
-                setShelfArray(targetList);
+                targetList.push(doc.data().listname);
             });
+            setShelfArray(targetList);
         }
+
         fetchData();
     }, []);
 
@@ -64,87 +65,56 @@ export default function AddButtons() {
             authorsNameRef.current.value = capitalizeText(
                 authorsNameRef.current.value
             );
-            //get the user's info
-            const q = await query(
-                collection(db, "users"),
-                where("email", "==", currentUser.email)
+            //get the user's lists
+            const listQuery = await query(
+                collection(db, "userlists"),
+                where("useremail", "==", currentUser.email)
             );
-            const querySnapshot = await getDocs(q);
-            querySnapshot.forEach(async (doc) => {
-                const bookQuery = await query(
-                    collection(db, "books"),
-                    where("volumeInfo.title", "==", titleRef.current.value),
-                    where(
-                        "volumeInfo.author",
-                        "==",
-                        authorsNameRef.current.value
-                    )
-                );
+            const allUserLists = await getDocs(listQuery);
 
+            allUserLists.forEach(async (individualList) => {
+                var bookQuery = await query(
+                    collection(db, "books"),
+                    where("title", "==", titleRef.current.value),
+                    where("author", "==", authorsNameRef.current.value)
+                );
                 //see if the book already exists
-                const docSnap = await getDocs(bookQuery);
+                var docSnap = await getDocs(bookQuery);
                 //book does not exist in the database so lets create it from the google api and link it
+                var currentBookId;
                 if (docSnap.empty == true) {
                     const volumeInfo = await getBookFromGoogle(
                         titleRef.current.value,
                         authorsNameRef.current.value
                     );
-                    addBookToFireStore(volumeInfo.items[0].volumeInfo);
-                } else {
-                    //book exists in the books database, create the link between the book to that user's selected lists
-                    const bookId = docSnap.docs[0].id; //get the book id
-                    const usersLists = doc.data().lists; //get the users lists and match a list to those of checkedShelves
-                    usersLists.forEach((list, i) => {
-                        if (checkedShelves.includes(list.listName)) {
-                            //if the name of the list is selected then add the book to that list with the proper params
-                            //this checks if the book is already in the selected list if it is then return nothing, idk if to alert the user
-                            var bookAlreadyExists = false;
-                            list.books.forEach(async (individualBook) => {
-                                if (
-                                    individualBook.bookId == docSnap.docs[0].id
-                                ) {
-                                    //this if means that the book is contained within list.books , which is the users book list then do nothing and set bookAlreadyExists to true
+                    currentBookId = await addBookToFireStore(
+                        volumeInfo.items[0].volumeInfo
+                    );
+                    currentBookId = currentBookId.id;
+                } else if (docSnap.empty == false) {
+                    docSnap.forEach((indBook) => {
+                        console.log(indBook);
+                        currentBookId = indBook.id;
+                    });
+                }
+                //book now exists in the books database, create the link between the book to that user's selected lists
 
-                                    bookAlreadyExists = true;
-                                } else {
-                                    //this else means that the book isn't there so add the book to the user
-                                    var completed = false;
-                                    var currentPage = 0;
-                                    var currentBookId = individualBook.bookId;
-                                    var today = new Date();
-                                    var startedOn =
-                                        1 +
-                                        today.getMonth() +
-                                        "-" +
-                                        today.getDate() +
-                                        "-" +
-                                        today.getFullYear();
-
-                                    console.log(doc.data().lists);
-                                    console.log("noiw u here");
-                                    const workingList = doc(db, "users");
-                                    // await updateDoc(doc, {
-                                    //     lists[i].books : arrayUnion(completed, currentPage, currentBookId, startedOn),
-                                    //     books: arrayUnion("greater_virginia"),
-                                    // });
-                                    bookAlreadyExists = false;
-                                }
-                            });
-                            console.log(list.books);
-                            //list.books.push()
+                if (checkedShelves.includes(individualList.data().listname)) {
+                    //if the name of the list is selected then add the book to that list with the proper params
+                    //this checks if the book is already in the selected list if it is then return nothing, idk if to alert the user
+                    var bookAlreadyInList = false;
+                    individualList.data().books.forEach((bookFromList) => {
+                        if (bookFromList.bookId == currentBookId) {
+                            bookAlreadyInList = true;
                         }
                     });
-                    console.log(docSnap.docs[0].id);
+                    if (bookAlreadyInList == false) {
+                        addBookToUserList(currentBookId, individualList.id);
+                    }
                 }
-
-                //extract the lists and add the book to the selected list
-                //add a date added and if added to readingList then add a date started field
-                //console.log(doc.data());
             });
-
-            console.log(checkedShelves);
         } catch (logoutError) {
-            setError("Failed to log out");
+            setError("Failed to add book to the selected shelves");
         }
     }
 
@@ -156,6 +126,38 @@ export default function AddButtons() {
             .join(" ");
 
         return text;
+    }
+
+    function getCurrentDate() {
+        var today = new Date();
+        var startedOn =
+            1 +
+            today.getMonth() +
+            "-" +
+            today.getDate() +
+            "-" +
+            today.getFullYear();
+
+        return startedOn;
+    }
+
+    async function addBookToUserList(bookId, listId) {
+        const workingList = doc(db, "userlists", listId);
+        const listInfo = await getDoc(workingList);
+
+        var bookArray = listInfo.data().books;
+
+        console.log(bookId);
+
+        bookArray.push({
+            bookId: bookId,
+            completed: false,
+            startedOn: getCurrentDate(),
+        });
+
+        await updateDoc(workingList, {
+            books: bookArray,
+        });
     }
 
     async function getBookFromGoogle(title, authorsName) {
@@ -174,34 +176,18 @@ export default function AddButtons() {
     }
 
     async function addBookToFireStore(volumeInfo) {
-        volumeInfo["imageLink"] = volumeInfo.imageLinks.thumbnail;
-        volumeInfo["author"] = volumeInfo.authors[0];
-        volumeInfo["category"] = capitalizeText(volumeInfo.categories[0]);
-        volumeInfo["publishYear"] = volumeInfo.publishedDate;
-
-        delete volumeInfo["authors"];
-        delete volumeInfo["allowAnonLogging"];
-        delete volumeInfo["canonicalVolumeLink"];
-        delete volumeInfo["categories"];
-        delete volumeInfo["contentVersion"];
-        delete volumeInfo["industryIdentifiers"];
-        delete volumeInfo["infoLink"];
-        delete volumeInfo["language"];
-        delete volumeInfo["previewLink"];
-        delete volumeInfo["printType"];
-        delete volumeInfo["publisher"];
-        delete volumeInfo["readingModes"];
-        delete volumeInfo["ratingsCount"];
-        delete volumeInfo["imageLinks"];
-        delete volumeInfo["panelizationSummary"];
-        delete volumeInfo["publishedDate"];
-        delete volumeInfo["maturityRating"];
-
         const docRef = await addDoc(collection(db, "books"), {
-            volumeInfo,
+            author: volumeInfo.authors[0],
+            averageRating: volumeInfo.averageRating,
+            category: capitalizeText(volumeInfo.categories[0]),
+            description: volumeInfo.description,
+            imageLink: volumeInfo.imageLinks.thumbnail,
+            pageCount: volumeInfo.pageCount,
+            publishYear: volumeInfo.publishedDate,
+            title: volumeInfo.title,
         });
 
-        console.log(volumeInfo);
+        return docRef;
     }
 
     async function handleAddShelf() {

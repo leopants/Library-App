@@ -23,10 +23,10 @@ export default function BookCard(props) {
 
     return (
         <div class="col">
-            <div class="row justify-content-start g-0 mt-0 ms-0 me-1 mb-0">
+            <div class="row justify-content-start g-0 mt-0 ms-0 me-0 mb-0">
                 <Card
                     style={{
-                        width: "300px",
+                        width: "350px",
                         flexDirection: "row",
                         border: "none",
                         backgroundColor: "#F3E9D4",
@@ -56,12 +56,13 @@ export default function BookCard(props) {
                                 fontFamily: "Work Sans",
                                 fontWeight: 600,
                                 margin: "0px",
+                                height: "100px",
                             }}
                         >
                             {title}
                         </Card.Text>
                         <Card.Text
-                            class="mt-5"
+                            class="mt-1"
                             style={{
                                 fontSize: "14px",
                                 fontFamily: "Work Sans",
