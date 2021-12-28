@@ -1,19 +1,10 @@
-import React, { useState } from "react";
-import { Link, useHistory } from "react-router-dom";
+import React from "react";
 import "../NavBar/NavBar";
-import NavBar from "../NavBar/NavBar";
-import ReadingItem from "../ReadingItem/ReadingItem";
-import { Button, Container, Row, Card } from "react-bootstrap";
-import { useAuth } from "../../contexts/AuthContext";
-import logo from "../../logo.png";
+import { Card } from "react-bootstrap";
+
 import mypic from "../../profpic.jpg";
-import { logRoles } from "@testing-library/react";
-const axios = require("axios");
 
 export default function FriendsListItem(friendsName, date, status, bookTitle) {
-    const [error, setError] = useState("");
-    const { currentUser, logout } = useAuth();
-    const history = useHistory();
     friendsName = "Jane";
     date = "4/14/2021";
     status = "Started";
@@ -21,7 +12,7 @@ export default function FriendsListItem(friendsName, date, status, bookTitle) {
 
     return (
         <div>
-            <div class="row justify-content-center g-0 mt-0 ms-5 me-5 mb-4">
+            <div class="row justify-content-center g-0 mt-0 ms-5 me-3 mb-4">
                 <Card
                     style={{
                         flexDirection: "row",

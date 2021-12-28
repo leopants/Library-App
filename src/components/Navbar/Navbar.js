@@ -6,7 +6,7 @@ import { NavLink, Link } from "react-router-dom";
 export default function NavBar() {
     return (
         <nav
-            class="navbar navbar-expand-lg navbar-light"
+            class="navbar navbar-expand-lg navbar-light pt-1 pb-1"
             style={{ backgroundColor: "#E7A148" }}
         >
             <div class="container-fluid">
@@ -14,8 +14,8 @@ export default function NavBar() {
                     as={NavLink}
                     exact
                     to="/"
-                    className="work-sans-brand navbar-brand ms-4"
-                    style={{ fontSize: "32px" }}
+                    className="work-sans-brand navbar-brand ms-5"
+                    style={{ fontSize: "30px" }}
                 >
                     Reading Pal
                 </Navbar.Brand>

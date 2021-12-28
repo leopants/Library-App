@@ -5,11 +5,8 @@ import Stats from "./components/Stats/Stats";
 import Lists from "./components/Lists/Lists";
 import Profile from "./components/Profile/Profile";
 import Dashboard from "./components/Dashboard/Dashboard";
-import ReadingItem from "./components/ReadingItem/ReadingItem";
-import Navbar from "./components/NavBar/NavBar";
 import ForgotPassword from "./components/ForgotPassword/ForgotPassword";
-import { Dash } from "react-bootstrap-icons";
-import { Container, Button } from "react-bootstrap";
+import { Container } from "react-bootstrap";
 import { AuthProvider } from "./contexts/AuthContext";
 
 import PrivateRoute from "./components/PrivateRoute/PrivateRoute";

@@ -1,28 +1,10 @@
 import React, { useRef, useState } from "react";
-import { KeyFill, PersonCircle } from "react-bootstrap-icons";
-import {
-    Form,
-    Button,
-    Card,
-    Alert,
-    Row,
-    Col,
-    Container,
-} from "react-bootstrap";
+import { Form, Button, Card, Alert, Col, Container } from "react-bootstrap";
 import "./Signup.css";
-import logo from "../../logo.png";
 import { useAuth } from "../../contexts/AuthContext";
 import { Link, useHistory } from "react-router-dom";
 import firebase from "firebase/compat/app";
-import {
-    collection,
-    query,
-    where,
-    doc,
-    getDoc,
-    getDocs,
-    setDoc,
-} from "firebase/firestore";
+import { collection, doc, getDocs, setDoc } from "firebase/firestore";
 require("firebase/compat/firestore");
 
 export default function Signup(props) {

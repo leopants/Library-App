@@ -1,0 +1,3 @@
+.btn:focus {
+    box-shadow: 0 0 0 0.15rem rgba(104, 4, 91, 0.116) !important;
+}

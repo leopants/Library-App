@@ -1,20 +1,8 @@
-import React, { useState } from "react";
-import { Link, useHistory } from "react-router-dom";
+import React from "react";
 import "../NavBar/NavBar";
-import NavBar from "../NavBar/NavBar";
-import ReadingItem from "../ReadingItem/ReadingItem";
-import { Button, Container, Row, Card } from "react-bootstrap";
-import { useAuth } from "../../contexts/AuthContext";
-import logo from "../../logo.png";
-import mypic from "../../profpic.jpg";
-import bookTestCover from "../../Rectangle 37.svg";
-const axios = require("axios");
+import { Card } from "react-bootstrap";
 
 export default function BookCard(props) {
-    const [error, setError] = useState("");
-    const { currentUser, logout } = useAuth();
-    const history = useHistory();
-
     const title = props.title;
     const author = props.author;
     const totalPages = props.pageCount;

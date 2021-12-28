@@ -1,12 +1,12 @@
-import React, { useState, useEffect, useLayoutEffect } from "react";
-import { Link, useHistory } from "react-router-dom";
+import React, { useState, useEffect } from "react";
+import { useHistory } from "react-router-dom";
 import "./Dashboard.css";
 import "../NavBar/NavBar";
 import NavBar from "../NavBar/NavBar";
 import AddButtons from "../AddButtons/AddButtons";
 import FriendsList from "../FriendsList/FriendsList";
 import BookCard from "../BookCard/BookCard";
-import { Button, Container, Image, Table } from "react-bootstrap";
+import { Container, Image, Table } from "react-bootstrap";
 import { useAuth } from "../../contexts/AuthContext";
 import shelf from "../../Top Shelf.svg";
 import firebase from "firebase/compat/app";
@@ -19,7 +19,6 @@ import {
     getDocs,
 } from "firebase/firestore";
 require("firebase/compat/firestore");
-const axios = require("axios");
 
 export default function Dashboard() {
     const db = firebase.firestore();
@@ -31,7 +30,6 @@ export default function Dashboard() {
     const history = useHistory();
     let isAM = true;
     var today = new Date();
-    var time = today.getHours();
 
     useEffect(() => {
         async function fetchData() {
@@ -83,23 +81,8 @@ export default function Dashboard() {
         return isAM;
     }
 
-    async function getAPIBook(title, authorFirst, authorLast) {
-        title = "the shining";
-        authorFirst = "stephen";
-        let url =
-            "https://www.googleapis.com/books/v1/volumes?q=inauthor:" +
-            authorFirst +
-            "+intitle:" +
-            title +
-            "&key=AIzaSyBA-Q3JKT8Y8qJ2Aw7V4oSJTCDT-CiOsAM";
-        axios
-            .get(url)
-            .then((response) => console.log(response.data.items[0].volumeInfo));
-    }
-
     async function handleLogout() {
         setError("");
-
         try {
             await logout();
             history.push("/login");
@@ -159,7 +142,6 @@ export default function Dashboard() {
                         <Table responsive borderless>
                             <tbody>
                                 <tr>
-                                    {console.log(bookArray)}
                                     {bookArray.map((item, i) => {
                                         return (
                                             <td

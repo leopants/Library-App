@@ -1,8 +1,8 @@
 import React, { useState, useRef, useEffect } from "react";
-import { Link, useHistory } from "react-router-dom";
+import { useHistory } from "react-router-dom";
 import "./AddButtons.css";
 import "../NavBar/NavBar";
-import { Button, Container, Row, Col, Form } from "react-bootstrap";
+import { Button, Container, Col, Form } from "react-bootstrap";
 import { useAuth } from "../../contexts/AuthContext";
 import firebase from "firebase/compat/app";
 import {
@@ -11,7 +11,6 @@ import {
     where,
     getDocs,
     updateDoc,
-    arrayUnion,
     addDoc,
     doc,
     getDoc,
@@ -28,6 +27,7 @@ export default function AddButtons() {
     const [checkedShelves, setCheckedShelves] = useState([]);
     const titleRef = useRef();
     const authorsNameRef = useRef();
+    const shelfNameRef = useRef();
     const history = useHistory();
 
     useEffect(() => {
@@ -43,13 +43,11 @@ export default function AddButtons() {
             });
             setShelfArray(targetList);
         }
-
         fetchData();
     }, []);
 
     async function handleLogout() {
         setError("");
-
         try {
             await logout();
             history.push("/login");
@@ -61,60 +59,65 @@ export default function AddButtons() {
 
     async function handleAddBook() {
         try {
+            //fix the user input data
             titleRef.current.value = capitalizeText(titleRef.current.value);
             authorsNameRef.current.value = capitalizeText(
                 authorsNameRef.current.value
             );
+
+            //get the selected book from the firestore db if it exists
+            var bookQuery = await query(
+                collection(db, "books"),
+                where("title", "==", titleRef.current.value),
+                where("author", "==", authorsNameRef.current.value)
+            );
+            //see if the book already exists
+            var docSnap = await getDocs(bookQuery);
+            //book does not exist in the database so lets create it from the google api and link it
+            var currentBookId;
+            if (docSnap.empty === true) {
+                const volumeInfo = await getBookFromGoogle(
+                    titleRef.current.value,
+                    authorsNameRef.current.value
+                );
+                currentBookId = await addBookToFireStore(
+                    volumeInfo.items[0].volumeInfo
+                );
+                currentBookId = currentBookId.id;
+            } else if (docSnap.empty === false) {
+                docSnap.forEach((indBook) => {
+                    console.log(indBook);
+                    currentBookId = indBook.id;
+                });
+            }
+
             //get the user's lists
             const listQuery = await query(
                 collection(db, "userlists"),
                 where("useremail", "==", currentUser.email)
             );
             const allUserLists = await getDocs(listQuery);
-
             allUserLists.forEach(async (individualList) => {
-                var bookQuery = await query(
-                    collection(db, "books"),
-                    where("title", "==", titleRef.current.value),
-                    where("author", "==", authorsNameRef.current.value)
-                );
-                //see if the book already exists
-                var docSnap = await getDocs(bookQuery);
-                //book does not exist in the database so lets create it from the google api and link it
-                var currentBookId;
-                if (docSnap.empty == true) {
-                    const volumeInfo = await getBookFromGoogle(
-                        titleRef.current.value,
-                        authorsNameRef.current.value
-                    );
-                    currentBookId = await addBookToFireStore(
-                        volumeInfo.items[0].volumeInfo
-                    );
-                    currentBookId = currentBookId.id;
-                } else if (docSnap.empty == false) {
-                    docSnap.forEach((indBook) => {
-                        console.log(indBook);
-                        currentBookId = indBook.id;
-                    });
-                }
-                //book now exists in the books database, create the link between the book to that user's selected lists
-
                 if (checkedShelves.includes(individualList.data().listname)) {
                     //if the name of the list is selected then add the book to that list with the proper params
-                    //this checks if the book is already in the selected list if it is then return nothing, idk if to alert the user
+                    //this checks if the book is already in the selected list if it is then return nothing
                     var bookAlreadyInList = false;
                     individualList.data().books.forEach((bookFromList) => {
-                        if (bookFromList.bookId == currentBookId) {
+                        if (bookFromList.bookId === currentBookId) {
                             bookAlreadyInList = true;
                         }
                     });
-                    if (bookAlreadyInList == false) {
-                        addBookToUserList(currentBookId, individualList.id);
+                    if (bookAlreadyInList === false) {
+                        await addBookToUserList(
+                            currentBookId,
+                            individualList.id
+                        );
+                        //window.location.reload(false);
                     }
                 }
             });
-        } catch (logoutError) {
-            setError("Failed to add book to the selected shelves");
+        } catch (error) {
+            setError("Failed to add the book to selected list successfully");
         }
     }
 
@@ -142,72 +145,111 @@ export default function AddButtons() {
     }
 
     async function addBookToUserList(bookId, listId) {
-        const workingList = doc(db, "userlists", listId);
-        const listInfo = await getDoc(workingList);
+        try {
+            const workingList = doc(db, "userlists", listId);
+            const listInfo = await getDoc(workingList);
 
-        var bookArray = listInfo.data().books;
+            var bookArray = listInfo.data().books;
 
-        console.log(bookId);
+            console.log(bookId);
 
-        bookArray.push({
-            bookId: bookId,
-            completed: false,
-            startedOn: getCurrentDate(),
-        });
+            bookArray.push({
+                bookId: bookId,
+                completed: false,
+                startedOn: getCurrentDate(),
+            });
 
-        await updateDoc(workingList, {
-            books: bookArray,
-        });
+            await updateDoc(workingList, {
+                books: bookArray,
+            });
+        } catch (e) {
+            setError("Failed to add the book to the " + listId + " list");
+            console.log(e);
+        }
     }
 
     async function getBookFromGoogle(title, authorsName) {
-        var authorFirst = authorsName.split(" ")[0];
-        let url =
-            "https://www.googleapis.com/books/v1/volumes?q=inauthor:" +
-            authorFirst +
-            "+intitle:" +
-            title +
-            "&key=AIzaSyBA-Q3JKT8Y8qJ2Aw7V4oSJTCDT-CiOsAM";
-        const resp = await axios.get(url);
+        try {
+            var authorFirst = authorsName.split(" ")[0];
+            let url =
+                "https://www.googleapis.com/books/v1/volumes?q=inauthor:" +
+                authorFirst +
+                "+intitle:" +
+                title +
+                "&key=AIzaSyBA-Q3JKT8Y8qJ2Aw7V4oSJTCDT-CiOsAM";
+            const resp = await axios.get(url);
 
-        if (resp.status == 200) {
-            return resp.data;
+            if (resp.status === 200) {
+                return resp.data;
+            }
+        } catch (e) {
+            setError("Failed to get the book info from the Google API");
+            console.log(e);
         }
     }
 
     async function addBookToFireStore(volumeInfo) {
-        const docRef = await addDoc(collection(db, "books"), {
-            author: volumeInfo.authors[0],
-            averageRating: volumeInfo.averageRating,
-            category: capitalizeText(volumeInfo.categories[0]),
-            description: volumeInfo.description,
-            imageLink: volumeInfo.imageLinks.thumbnail,
-            pageCount: volumeInfo.pageCount,
-            publishYear: volumeInfo.publishedDate,
-            title: volumeInfo.title,
-        });
+        try {
+            const docRef = await addDoc(collection(db, "books"), {
+                author: volumeInfo.authors[0],
+                averageRating: volumeInfo.averageRating,
+                category: capitalizeText(volumeInfo.categories[0]),
+                description: volumeInfo.description,
+                imageLink: volumeInfo.imageLinks.thumbnail,
+                pageCount: volumeInfo.pageCount,
+                publishYear: volumeInfo.publishedDate,
+                title: volumeInfo.title,
+            });
 
-        return docRef;
+            return docRef;
+        } catch (e) {
+            setError("Failed to add book to firestore list");
+            console.log(e);
+        }
     }
 
-    async function handleAddShelf() {
-        setError("");
+    const dupCheckListName = async () => {
+        const listQuery = await query(
+            collection(db, "userlists"),
+            where("useremail", "==", currentUser.email),
+            where("listname", "==", shelfNameRef.current.value)
+        );
+        const allUserLists = await getDocs(listQuery);
+        if (allUserLists.empty === true) {
+            return true;
+        } else {
+            return false;
+        }
+    };
 
+    const handleAddShelf = async (e) => {
         try {
-            console.log("helllllooooo");
+            e.preventDefault();
+            const listDoesNotExist = await dupCheckListName();
+            if (listDoesNotExist) {
+                const docRef = await addDoc(collection(db, "userlists"), {
+                    listname: shelfNameRef.current.value,
+                    useremail: currentUser.email,
+                    books: [],
+                });
+                window.location.reload(false);
+            } else {
+                setError("List with that name already exists");
+                console.log(error);
+            }
         } catch (logoutError) {
             setError("Failed to log out");
+            console.log(error);
         }
-        console.log(error);
-    }
+    };
 
     function handleButtonPress(e) {
         try {
-            if (e.target.checked == true) {
+            if (e.target.checked === true) {
                 setCheckedShelves((prevArray) => [...prevArray, e.target.id]);
             } else {
                 setCheckedShelves((prevArray) =>
-                    prevArray.filter((shelf) => shelf != e.target.id)
+                    prevArray.filter((shelf) => shelf !== e.target.id)
                 );
             }
         } catch (logoutError) {
@@ -326,7 +368,7 @@ export default function AddButtons() {
                                 <Container fluid>
                                     <div class="row justify-content-center g-0">
                                         <Col sm={6}>
-                                            <Form onSubmit={handleLogout}>
+                                            <Form onSubmit={handleAddBook}>
                                                 <Form.Group
                                                     id="title"
                                                     className="formGroup"
@@ -438,13 +480,24 @@ export default function AddButtons() {
                     <div class="modal-dialog modal-dialog-centered">
                         <div
                             class="modal-content"
-                            style={{ border: "none", borderRadius: "0px" }}
+                            style={{
+                                border: "none",
+                                borderRadius: "0px",
+                                backgroundColor: "#F3E9D4",
+                            }}
                         >
                             <div
                                 class="modal-header"
                                 style={{ border: "none" }}
                             >
-                                <h5 class="modal-title" id="exampleModalLabel">
+                                <h5
+                                    class="modal-title"
+                                    id="exampleModalLabel"
+                                    style={{
+                                        fontWeight: "700",
+                                        fontSize: "30px",
+                                    }}
+                                >
                                     Add Shelf
                                 </h5>
                                 <button
@@ -454,20 +507,52 @@ export default function AddButtons() {
                                     aria-label="Close"
                                 ></button>
                             </div>
-                            <div class="modal-body">...</div>
-                            <div
-                                class="modal-footer justify-content-center"
-                                style={{ border: "none" }}
-                            >
-                                <button
-                                    type="button"
-                                    class="btn"
-                                    data-bs-dismiss="modal"
-                                    onClick={handleAddShelf}
-                                    style={{ backgroundColor: "#e7a148" }}
-                                >
-                                    Done
-                                </button>
+                            <div class="modal-body">
+                                <Container fluid>
+                                    <div class="row justify-content-center g-0">
+                                        <Col sm={6}>
+                                            <Form onSubmit={handleAddShelf}>
+                                                <Form.Group
+                                                    id="shelfName"
+                                                    className="formGroup"
+                                                >
+                                                    <Form.Label className="formLabel">
+                                                        Shelf Name
+                                                    </Form.Label>
+                                                    <Form.Control
+                                                        style={{
+                                                            backgroundColor:
+                                                                "#fff",
+                                                            border: "none",
+                                                        }}
+                                                        type="text"
+                                                        ref={shelfNameRef}
+                                                        required
+                                                    />
+                                                </Form.Group>
+                                                <div
+                                                    class="modal-footer justify-content-center"
+                                                    style={{ border: "none" }}
+                                                >
+                                                    <button
+                                                        type="submit"
+                                                        class="btn"
+                                                        data-bs-dismiss="modal"
+                                                        style={{
+                                                            backgroundColor:
+                                                                "#dc8920",
+                                                            borderRadius:
+                                                                "25px",
+                                                            width: "90px",
+                                                        }}
+                                                    >
+                                                        Done
+                                                    </button>
+                                                </div>
+                                            </Form>
+                                        </Col>
+                                    </div>
+                                </Container>
                             </div>
                         </div>
                     </div>
