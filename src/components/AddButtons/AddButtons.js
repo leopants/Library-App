@@ -112,7 +112,7 @@ export default function AddButtons() {
                             currentBookId,
                             individualList.id
                         );
-                        //window.location.reload(false);
+                        window.location.reload(false);
                     }
                 }
             });
