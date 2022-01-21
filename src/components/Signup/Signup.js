@@ -4,7 +4,7 @@ import "./Signup.css";
 import { useAuth } from "../../contexts/AuthContext";
 import { Link, useHistory } from "react-router-dom";
 import firebase from "firebase/compat/app";
-import { collection, doc, getDocs, setDoc } from "firebase/firestore";
+import { collection, doc, getDocs, setDoc, addDoc } from "firebase/firestore";
 require("firebase/compat/firestore");
 
 export default function Signup(props) {
@@ -40,12 +40,24 @@ export default function Signup(props) {
                 username: usernameRef.current.value,
                 email: emailRef.current.value,
             });
+            await addNewUsersLists()
             history.push("/");
         } catch {
             setError("Unable to create an account");
         }
         setLoading(false);
     };
+
+    const addNewUsersLists = async () => {
+        const listOfLists = ['Reading List', 'Wishlist', 'Completed', 'All']
+        listOfLists.forEach(async(i) => {
+            const docRef = await addDoc(collection(db, "userlists"), {
+                listname: i,
+                useremail: emailRef.current.value,
+                books: [],
+            });
+        })
+    }
 
     const onGetBooks = async () => {
         try {

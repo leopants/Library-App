@@ -39,7 +39,9 @@ export default function AddButtons() {
             const querySnapshot = await getDocs(q);
             var targetList = [];
             querySnapshot.forEach((doc) => {
-                targetList.push(doc.data().listname);
+                if(doc.data().listname !== 'All') {
+                    targetList.push(doc.data().listname);
+                }
             });
             setShelfArray(targetList);
         }
@@ -80,6 +82,7 @@ export default function AddButtons() {
                     titleRef.current.value,
                     authorsNameRef.current.value
                 );
+
                 currentBookId = await addBookToFireStore(
                     volumeInfo.items[0].volumeInfo
                 );
@@ -112,10 +115,24 @@ export default function AddButtons() {
                             currentBookId,
                             individualList.id
                         );
-                        window.location.reload(false);
+                    }
+                }
+                else if (individualList.data().listname === 'All') {
+                    var bookAlreadyInList = false;
+                    individualList.data().books.forEach((bookFromList) => {
+                        if (bookFromList.bookId === currentBookId) {
+                            bookAlreadyInList = true;
+                        }
+                    });
+                    if (bookAlreadyInList === false) {
+                        await addBookToUserList(
+                            currentBookId,
+                            individualList.id
+                        );
                     }
                 }
             });
+            //window.location.reload(false);
         } catch (error) {
             setError("Failed to add the book to selected list successfully");
         }

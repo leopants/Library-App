@@ -14,6 +14,7 @@ import {
 } from "recharts";
 import { useAuth } from "../../contexts/AuthContext";
 import firebase from "firebase/compat/app";
+import WikiJS from "wikijs";
 import {
     collection,
     query,
@@ -32,6 +33,7 @@ export default function StatsDashboard(props) {
     const currentList = props.currentList;
     const [error, setError] = useState("");
     const { currentUser, logout } = useAuth();
+
 
     const data = [
         {
@@ -78,11 +80,34 @@ export default function StatsDashboard(props) {
         },
     ];
 
+    const handleButtonPress = async () => {
+        const authorsName = "Stephen King";
+        const url =
+            "https://www.wikidata.org/w/api.php?action=wbgetentities&format=json&titles=" +
+            authorsName +
+            "&sites=enwiki&origin=*";
+        const res = await fetch(url);
+        const data = await res.json();
+
+        const entityId = Object.keys(data.entities)[0];
+
+        const entityUrl = "https://www.wikidata.org/w/api.php?action=wbgetclaims&format=json&entity=" +
+        entityId + "&property=P19" +
+        "&sites=enwiki&origin=*";
+        const entityRes = await fetch(entityUrl)
+        const entityData = await entityRes.json()
+        console.log(entityData)
+        //gotta get the id from this to use on the thing.
+        //P19 = birthplace, P569 = date of birth, P21 = sex or gender, P27 = country of citizenship
+        //gotta get that persons entity, seperate into two functions then. One that gets the entity name and one that gets these claims
+    };
+
     return (
         <div class="container-fluid g-0" style={{ padding: "0px" }}>
             <div class="row justify-content-center g-0">
                 <div class="col-sm-12">{currentList.listname}</div>
                 {console.log(currentList.listname)}
+                <Button onClick={handleButtonPress}>Hello</Button>
                 <LineChart
                     width={500}
                     height={300}

@@ -155,7 +155,7 @@ export default function Login(props) {
                                         className="w-100 mt-2"
                                         type="submit"
                                     >
-                                        Sign Up
+                                        Login
                                     </Button>
                                 </Form>
                             </Card.Body>
