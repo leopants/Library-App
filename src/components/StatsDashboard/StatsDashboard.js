@@ -106,8 +106,7 @@ export default function StatsDashboard(props) {
         <div class="container-fluid g-0" style={{ padding: "0px" }}>
             <div class="row justify-content-center g-0">
                 <div class="col-sm-12">{currentList.listname}</div>
-                {console.log(currentList.listname)}
-                <Button onClick={handleButtonPress}>Hello</Button>
+                <Button onClick={handleButtonPress}>Testing for author information retrieval</Button>
                 <LineChart
                     width={500}
                     height={300}

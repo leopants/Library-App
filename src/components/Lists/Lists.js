@@ -1,10 +1,9 @@
 import React, { useState, useEffect } from "react";
-import { useHistory } from "react-router-dom";
 import "./Lists.css";
 import "../NavBar/NavBar";
 import Navbar from "../NavBar/NavBar";
 import AddButtons from "../AddButtons/AddButtons";
-import { Container, Image, Table } from "react-bootstrap";
+import { Container, Image, Table, Toast, Spinner } from "react-bootstrap";
 import BookCard from "../BookCard/BookCard";
 import { useAuth } from "../../contexts/AuthContext";
 import shelf from "../../Top Shelf.svg";
@@ -17,47 +16,51 @@ import {
     getDoc,
     getDocs,
 } from "firebase/firestore";
+import PuffLoader from "react-spinners/PuffLoader";
 require("firebase/compat/firestore");
 
-export default function Dashboard() {
+export default function Lists() {
     const db = firebase.firestore();
 
-    const [error, setError] = useState("");
-    const { currentUser, logout } = useAuth();
-    const [bookArray, setBookArray] = useState(new Map());
-    const history = useHistory();
+    const { currentUser } = useAuth();
+    const [bookArray, setBookArray] = useState([]);
+    const [showB, setShowB] = useState(true);
+    const [loading, setLoading] = useState(false)
+
+    const toggleShowB = () => setShowB(!showB);
 
     useEffect(() => {
         async function fetchData() {
+            setLoading(true)
+            //get the lists belonging to a user
             const listQuery = await query(
                 collection(db, "userlists"),
                 where("useremail", "==", currentUser.email)
             );
             const listSnapshot = await getDocs(listQuery);
             
-            var targetList = new Map();
+            //get the id of books from this list and save it in an array targetList
+            var targetList = [];
             listSnapshot.forEach((userList) => {
                 var bookIds = [];
                 userList.data().books.forEach(listEntry => {
                     bookIds.push(listEntry.bookId)
                 })
-                targetList.set(userList.data().listname, bookIds)
+                targetList.push([userList.data().listname, bookIds])
             });
-            //do this with an iterator instead see wtf happens then i guess
-            //lord knows what the fuck I'm doing at the moment
-            var bookList = new Map();
-            targetList.forEach(async (list, key) => {
+
+            //replace the ids with the actual book information and save it to the bookList array
+            targetList.forEach((list) => {
                 var bookInfoForList = [];
-                list.forEach(async (singleBookId) => {
+                list[1].forEach(async (singleBookId) => {
                     const docSnap = await getFirestoreDoc(singleBookId);
                     if (docSnap.exists()) {
                         bookInfoForList.push(docSnap.data());
-                        //setBookArray((prevArray) => [...prevArray, bookList]); //idk man please remember this has to do with keeping prevArray
                     }
                 })
-                bookList.set(key, bookInfoForList)
+                setBookArray((prevArray) => [...prevArray, [list[0], bookInfoForList]]); //append the list name and the info for that list to the bookArray
             });
-            setBookArray(bookList);
+            setTimeout(() => { setLoading(false) }, 1000);
         }
 
         async function getFirestoreDoc(bookId) {
@@ -68,74 +71,78 @@ export default function Dashboard() {
         fetchData();
     }, []);
 
-    async function handleLogout() {
-        setError("");
-
-        try {
-            await logout();
-            history.push("/login");
-        } catch (logoutError) {
-            setError("Failed to log out");
-        }
-        console.log(error);
-    }
-
     return (
         <div class="container-fluid g-0" style={{ padding: "0px" }}>
             <Navbar />
             <Container fluid>
-                <div class="row justify-content-center g-0">
-                    <div class="col-sm-2">
-                        <div class="row justify-content-center g-0 mt-0">
-                            <AddButtons />
+                {loading === true &&
+                    <div class="col-sm-12">
+                        <div class="row justify-content-center g-0" style={{marginTop: "100px"}}>
+                            <PuffLoader />
                         </div>
                     </div>
-                    
-                    <div class="col-sm-10 mt-4">
-                        {Array.from(bookArray).map((item, key) => {
-                            return (
-                                <div key={key.id}>
-                                    <div
-                                        class="row justify-content-center g-0 mt-0 mb-2"
-                                        style={{
-                                            fontSize: "24px",
-                                            fontWeight: "600",
-                                            fontFamily: "Work Sans",
-                                        }}
-                                    >
+                }
+                {loading === false &&
+                    <div class="row justify-content-center g-0">
+                        <div class="col-sm-2">
+                            <div class="row justify-content-center g-0 mt-0">
+                                <AddButtons />
+                            </div>
+                        </div>
+                        
+                        <div class="col-sm-9 mt-4">
+                            {console.log(bookArray)}
+                            {(bookArray).map((item, key) => {
+                                if(item[1].length === 0) {
+                                    return null
+                                }
+                                else {
+                                return (
+                                    <div key={key+1000}>
+                                        <div
+                                            class="row justify-content-center g-0 mt-0 mb-2"
+                                            style={{
+                                                fontSize: "24px",
+                                                fontWeight: "600",
+                                                fontFamily: "Work Sans",
+                                            }}
+                                        >
 
-                                        <p>{item[0]}</p>
+                                            <p>{item[0]}</p>
+                                        </div>
+                                        
+                                        <Table responsive borderless>
+                                            <tbody>
+                                                <tr>
+                                                    {(item[1]).map((indBook, secondKey) => {
+                                                        return (
+                                                            <td
+                                                                key={secondKey + 10000}
+                                                                style={{
+                                                                    width: "350px !important",
+                                                                }}
+                                                            >
+                                                                <BookCard
+                                                                    author={indBook.author}
+                                                                    title={indBook.title}
+                                                                    pageCount={indBook.pageCount}
+                                                                    imageLink={indBook.imageLink}
+                                                                />
+                                                            </td>
+                                                        );
+                                                    })}
+                                                </tr> 
+                                            </tbody>
+                                        </Table>
+                                        <Image fluid src={shelf}></Image>
                                     </div>
-                                    <Table responsive borderless>
-                                        <tbody>
-                                            <tr>
-                                                {Array.from(item[1]).map((indBook, secondKey) => {
-                                                    return (
-                                                        <td
-                                                            key={secondKey.id}
-                                                            style={{
-                                                                width: "350px !important",
-                                                            }}
-                                                        >
-                                                            {console.log(indBook)}
-                                                            <BookCard
-                                                                author={indBook.author}
-                                                                title={indBook.title}
-                                                                pageCount={indBook.pageCount}
-                                                                imageLink={indBook.imageLink}
-                                                            />
-                                                        </td>
-                                                    );
-                                                })}
-                                            </tr>
-                                        </tbody>
-                                    </Table>
-                                    <Image fluid src={shelf}></Image>
-                                </div>
-                            );
-                        })}
+                                );
+                                }
+                            })}
+                        </div>
+                        <div class="col-sm-1"></div>
                     </div>
-                </div>
+                }
             </Container>
         </div>
                 

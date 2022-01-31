@@ -8,12 +8,14 @@ import Dashboard from "./components/Dashboard/Dashboard";
 import ForgotPassword from "./components/ForgotPassword/ForgotPassword";
 import { Container } from "react-bootstrap";
 import { AuthProvider } from "./contexts/AuthContext";
+import createHistory from 'history/createBrowserHistory';
 
 import PrivateRoute from "./components/PrivateRoute/PrivateRoute";
 
 import { BrowserRouter as Router, Switch, Route } from "react-router-dom";
 
 export default function App() {
+
     return (
         <Container
             fluid

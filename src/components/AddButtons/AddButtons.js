@@ -48,16 +48,6 @@ export default function AddButtons() {
         fetchData();
     }, []);
 
-    async function handleLogout() {
-        setError("");
-        try {
-            await logout();
-            history.push("/login");
-        } catch (logoutError) {
-            setError("Failed to log out");
-        }
-        console.log(error);
-    }
 
     async function handleAddBook() {
         try {
@@ -67,29 +57,31 @@ export default function AddButtons() {
                 authorsNameRef.current.value
             );
 
+            //get the book from google
+            const volumeInfo = await getBookFromGoogle(
+                titleRef.current.value,
+                authorsNameRef.current.value
+            );
+
             //get the selected book from the firestore db if it exists
             var bookQuery = await query(
                 collection(db, "books"),
-                where("title", "==", titleRef.current.value),
-                where("author", "==", authorsNameRef.current.value)
+                where("title", "==", volumeInfo.items[0].volumeInfo.title),
+                where("author", "==", volumeInfo.items[0].volumeInfo.authors[0])
             );
+
             //see if the book already exists
             var docSnap = await getDocs(bookQuery);
+
             //book does not exist in the database so lets create it from the google api and link it
             var currentBookId;
             if (docSnap.empty === true) {
-                const volumeInfo = await getBookFromGoogle(
-                    titleRef.current.value,
-                    authorsNameRef.current.value
-                );
-
                 currentBookId = await addBookToFireStore(
                     volumeInfo.items[0].volumeInfo
                 );
                 currentBookId = currentBookId.id;
-            } else if (docSnap.empty === false) {
+            } else if (docSnap.empty === false) {   //book does exist in database
                 docSnap.forEach((indBook) => {
-                    console.log(indBook);
                     currentBookId = indBook.id;
                 });
             }
@@ -132,7 +124,7 @@ export default function AddButtons() {
                     }
                 }
             });
-            //window.location.reload(false);
+            window.location.reload(false);
         } catch (error) {
             setError("Failed to add the book to selected list successfully");
         }
@@ -174,6 +166,9 @@ export default function AddButtons() {
                 bookId: bookId,
                 completed: false,
                 startedOn: getCurrentDate(),
+                currentPage: 0,
+                comment: "",
+                rating: null
             });
 
             await updateDoc(workingList, {

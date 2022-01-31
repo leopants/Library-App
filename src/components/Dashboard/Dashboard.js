@@ -6,7 +6,7 @@ import NavBar from "../NavBar/NavBar";
 import AddButtons from "../AddButtons/AddButtons";
 import FriendsList from "../FriendsList/FriendsList";
 import BookCard from "../BookCard/BookCard";
-import { Container, Image, Table } from "react-bootstrap";
+import { Container, Image, Table, Button } from "react-bootstrap";
 import { useAuth } from "../../contexts/AuthContext";
 import shelf from "../../Top Shelf.svg";
 import firebase from "firebase/compat/app";
@@ -29,7 +29,6 @@ export default function Dashboard() {
     const [bookArray, setBookArray] = useState([]);
     const history = useHistory();
     let isAM = true;
-    var today = new Date();
 
     useEffect(() => {
         async function fetchData() {
@@ -56,11 +55,15 @@ export default function Dashboard() {
 
             var bookList = [];
             targetList.forEach(async (book) => {
+                console.log(book)
                 const docSnap = await getFirestoreDoc(book.bookId);
                 if (docSnap.exists()) {
-                    bookList.push(docSnap.data());
-                    //setBookArray((prevArray) => [...prevArray, bookList]); //idk man please remember this has to do with keeping prevArray
-
+                    const jsonPlaceHolder = docSnap.data()
+                    jsonPlaceHolder.currentPage = book.currentPage
+                    jsonPlaceHolder.comment = book.comment
+                    jsonPlaceHolder.rating = book.rating
+                    jsonPlaceHolder.completed = book.completed
+                    bookList.push(jsonPlaceHolder);
                     setBookArray([...bookList]);
                 }
             });
@@ -81,22 +84,11 @@ export default function Dashboard() {
         return isAM;
     }
 
-    async function handleLogout() {
-        setError("");
-        try {
-            await logout();
-            history.push("/login");
-        } catch (logoutError) {
-            setError("Failed to log out");
-        }
-        console.log(error);
-    }
-
     return (
         <div class="container-fluid g-0" style={{ padding: "0px" }}>
             <NavBar />
             <Container fluid>
-                {getGreeting() == true && (
+                {getGreeting(new Date().getHours()) == true && (
                     <p
                         className="greeting"
                         class="d-flex justify-content-center m-4"
@@ -109,7 +101,7 @@ export default function Dashboard() {
                         Good Morning, {userFirstName}!
                     </p>
                 )}
-                {getGreeting() == false && (
+                {getGreeting(new Date().getHours()) == false && (
                     <p
                         className="greeting"
                         class="d-flex justify-content-center m-4"
@@ -155,6 +147,10 @@ export default function Dashboard() {
                                                     title={item.title}
                                                     pageCount={item.pageCount}
                                                     imageLink={item.imageLink}
+                                                    comment = {item.comment}
+                                                    rating = {item.rating}
+                                                    currentPage = {item.currentPage}
+                                                    completed = {item.completed}
                                                 />
                                             </td>
                                         );

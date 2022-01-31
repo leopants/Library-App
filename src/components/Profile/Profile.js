@@ -47,9 +47,8 @@ export default function Dashboard() {
 
     async function handleLogout() {
         setError("");
-
         try {
-            await logout();
+            //await logout();
             history.push("/login");
         } catch (logoutError) {
             setError("Failed to log out");
@@ -63,15 +62,21 @@ export default function Dashboard() {
             <div class="row justify-content-center g-0">
                 <div class="col-sm-6">
                     <div>
-                        <div style={{marginTop: "30px"}}>
-                            <p style={{textAlign: "center", fontSize: "28px", fontWeight: 600}}>{userFirstName}</p>
-                            <p style={{textAlign: "center", fontSize: "18px", fontWeight: 400}}>{currentUser.email}</p>
-                            
+                        <div class="text-center" style={{marginTop: "30px"}}>
+                            <p style={{fontSize: "28px", fontWeight: 600}}>{userFirstName}</p>
+                            <p style={{fontSize: "18px", fontWeight: 400}}>{currentUser.email}</p>
+                            <Button style={{
+                                color: "black",
+                                backgroundColor: "#FFFFFA",
+                                border: "0px",
+                                width: "100px",
+                                borderRadius: "17px",
+                                padding: "5px",
+                                boxShadow: "0px 0px 26px rgba(0,0,0,.20)",
+                            }} onClick={handleLogout}>
+                                Log Out
+                            </Button>
                         </div>
-                        {console.log(currentUser)}
-                        <Button variant="link" onClick={handleLogout}>
-                            Log Out
-                        </Button>
                     </div>
                 </div>
             </div>
