@@ -1,7 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
-import { useHistory } from "react-router-dom";
 import "./AddButtons.css";
-import "../NavBar/NavBar";
 import { Button, Container, Col, Form } from "react-bootstrap";
 import { useAuth } from "../../contexts/AuthContext";
 import firebase from "firebase/compat/app";
@@ -22,13 +20,12 @@ export default function AddButtons() {
     const db = firebase.firestore();
 
     const [error, setError] = useState("");
-    const { currentUser, logout } = useAuth();
+    const { currentUser } = useAuth();
     const [shelfArray, setShelfArray] = useState([]);
     const [checkedShelves, setCheckedShelves] = useState([]);
     const titleRef = useRef();
     const authorsNameRef = useRef();
     const shelfNameRef = useRef();
-    const history = useHistory();
 
     useEffect(() => {
         async function fetchData() {

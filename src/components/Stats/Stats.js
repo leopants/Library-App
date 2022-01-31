@@ -1,9 +1,7 @@
 import React, { useState, useEffect } from "react";
-import { Link, useHistory } from "react-router-dom";
+import {  useHistory } from "react-router-dom";
 import "./Stats.css";
-import "../NavBar/NavBar";
-import Navbar from "./src/components/NavBar/NavBar.js";
-import ReadingItem from "../ReadingItem/ReadingItem.js";
+import Navbar from "../NavBar/NavBar.js";
 import { Button } from "react-bootstrap";
 import { useAuth } from "../../contexts/AuthContext";
 import firebase from "firebase/compat/app";
@@ -11,13 +9,10 @@ import {
     collection,
     query,
     where,
-    doc,
-    getDoc,
     getDocs,
 } from "firebase/firestore";
 import StatsDashboard from "../StatsDashboard/StatsDashboard";
 require("firebase/compat/firestore");
-const axios = require("axios");
 
 export default function Stats() {
     const db = firebase.firestore();

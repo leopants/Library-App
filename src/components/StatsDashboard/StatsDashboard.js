@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from "react";
 import "./StatsDashboard.css";
-import "../NavBar/NavBar";
 import { Button } from "react-bootstrap";
 import {
     LineChart,

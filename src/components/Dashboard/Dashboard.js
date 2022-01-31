@@ -2,10 +2,10 @@ import React, { useState, useEffect } from "react";
 import { useHistory } from "react-router-dom";
 import "./Dashboard.css";
 import "../NavBar/NavBar";
-import NavBar from "../NavBar/NavBar";
-import AddButtons from "../AddButtons/AddButtons";
-import FriendsList from "../FriendsList/FriendsList";
-import BookCard from "../BookCard/BookCard";
+import Navbar from "../NavBar/NavBar.js";
+import AddButtons from "../AddButtons/AddButtons.js";
+import FriendsList from "../FriendsList/FriendsList.js";
+import BookCard from "../BookCard/BookCard.js";
 import { Container, Image, Table, Button } from "react-bootstrap";
 import { useAuth } from "../../contexts/AuthContext";
 import shelf from "../../Top Shelf.svg";
@@ -86,7 +86,7 @@ export default function Dashboard() {
 
     return (
         <div class="container-fluid g-0" style={{ padding: "0px" }}>
-            <NavBar />
+            <Navbar />
             <Container fluid>
                 {getGreeting(new Date().getHours()) == true && (
                     <p

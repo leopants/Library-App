@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from "react";
 import "./Lists.css";
 import "../NavBar/NavBar";
-import Navbar from "../NavBar/NavBar";
-import AddButtons from "../AddButtons/AddButtons";
-import { Container, Image, Table, Toast, Spinner } from "react-bootstrap";
-import BookCard from "../BookCard/BookCard";
+import Navbar from "../NavBar/NavBar.js";
+import AddButtons from "../AddButtons/AddButtons.js";
+import { Container, Image, Table } from "react-bootstrap";
+import BookCard from "../BookCard/BookCard.js";
 import { useAuth } from "../../contexts/AuthContext";
 import shelf from "../../Top Shelf.svg";
 import firebase from "firebase/compat/app";

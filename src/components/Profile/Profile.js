@@ -1,10 +1,7 @@
 import React, { useState, useEffect } from "react";
-import { MDBContainer, MDBRow, MDBCol } from "mdb-react-ui-kit";
-import { Link, useHistory } from "react-router-dom";
+import {  useHistory } from "react-router-dom";
 import "./Profile.css";
-import "../NavBar/NavBar";
-import Navbar from "../NavBar/NavBar";
-import ReadingItem from "../ReadingItem/ReadingItem";
+import Navbar from "../NavBar/NavBar.js";
 import { Button } from "react-bootstrap";
 import { useAuth } from "../../contexts/AuthContext";
 import firebase from "firebase/compat/app";
@@ -13,20 +10,15 @@ import {
     query,
     where,
     getDocs,
-    updateDoc,
-    addDoc,
-    doc,
-    getDoc,
 } from "firebase/firestore";
 require("firebase/compat/firestore");
-const axios = require("axios");
 
 export default function Dashboard() {
     const db = firebase.firestore();
 
     const [error, setError] = useState("");
     const [userFirstName, setUserFirstName] = useState("");
-    const { currentUser, logout } = useAuth();
+    const { currentUser } = useAuth();
     const history = useHistory();
 
     useEffect(() => {
@@ -36,10 +28,8 @@ export default function Dashboard() {
                 where("email", "==", currentUser.email)
             );
             const querySnapshot = await getDocs(q);
-            var targetList = [];
             querySnapshot.forEach((doc) => {
                 setUserFirstName(doc.data().firstName)
-                
             });
         }
         fetchData();
