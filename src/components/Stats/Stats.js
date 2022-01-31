@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Link, useHistory } from "react-router-dom";
 import "./Stats.css";
 import "../NavBar/NavBar";
-import Navbar from "../NavBar/NavBar.js";
+import Navbar from "./src/components/NavBar/NavBar.js";
 import ReadingItem from "../ReadingItem/ReadingItem.js";
 import { Button } from "react-bootstrap";
 import { useAuth } from "../../contexts/AuthContext";
